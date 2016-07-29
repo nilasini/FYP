@@ -66,11 +66,15 @@ class Solver:
                             print('right hand side of the first row ', arrayfirstrow)
 
                         #check whether left hand side contain operand
-                        elif "-" in leftelement:
-                            iscontainminus = true
-
-                            # split the left hand side using -
-                            twoOperandSplitArray = leftelement.split('-')
+                        else:
+                            if "-" in leftelement:
+                                iscontainminus = true
+                                # split the left hand side using -
+                                twoOperandSplitArray = leftelement.split('-')
+                            elif "+" in leftelement:
+                                iscontainplus = true
+                                # split the left hand side using -
+                                twoOperandSplitArray = leftelement.split('+')
 
                             # get the right hand side elements of the first row of the matrix
                             rightelement = arrayStr.pop(0)
@@ -92,11 +96,13 @@ class Solver:
                                 elif "A" in elements and iscontainplus:
                                     leftsidewithoperand = G + A
                                     answers = solve((C - leftsidewithoperand), x, y)
-                                    # answerofx = answers.pop(x)
+                                    answerofx = answers.pop(x)
                                     answerofy = answers.pop(y)
                                 elif "B" in elements and iscontainminus:
                                     leftsidewithoperand = G - B
+                                    print('C - leftsidewithoperand ',C - leftsidewithoperand)
                                     answers = solve((C - leftsidewithoperand), x, y)
+                                    print('answers pop x', answers)
                                     answerofx = answers.pop(x)
                                     answerofy = answers.pop(y)
                                     print('lefhand side which contains operand using sympy ', leftsidewithoperand)
@@ -113,8 +119,8 @@ class Solver:
                                 nextrow[i - 1][k] = temporary[k]
                     i += 1
                     print('.......................one line finished..................')
-                    if i==rowsizea:
-                        i=0
+                    if i == rowsizea:
+                        i = 0
                         j = 0
                         for j in range(len(nextrow)):
                             for elements in nextrow[j]:
@@ -136,9 +142,9 @@ class Solver:
                         print('size is ',size)
                         for l in range(0, size):
                             if l == 0:
-                                matricearray.insert(l,arrayfirstrow)
+                                matricearray.insert(l, arrayfirstrow)
                             else:
-                                matricearray.insert(l, arraynextrows[l-1])
+                                matricearray.insert(l, arraynextrows[l - 1])
                         print('matricearray[l] ', matricearray)
                         D = Matrix(matricearray)
                         print('this is D ', D)
@@ -170,6 +176,7 @@ class Solver:
                 elif isplus:
                     middlearr = elements.split('+')
                 array = [] * len(middlearr)
+                print('middlearr ',middlearr)
                 for item in middlearr:
                     if "y" in item:
                         value = answerofy
@@ -186,6 +193,7 @@ class Solver:
                     ansofmiddlearr = int(firstelement) - int(secondelement)
                     print('first element ',firstelement, 'secondelement', secondelement,'ans of variable index ',ansofmiddlearr)
                 elif isplus:
+                    print(' array[1] ', array[1])
                     firstelement = array[0]
                     secondelement = array[1]
                     ansofmiddlearr = int(firstelement) + int(secondelement)
