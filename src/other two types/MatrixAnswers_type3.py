@@ -32,7 +32,7 @@ class MatrixAnswers:
         lhs_dict = {}
 
         #open the question file
-        filein = open('2010q.html')
+        filein = open('2010_type3_q1.html')
         i = 0
         j = 0
         logger.info('Reading question')
@@ -81,6 +81,7 @@ class MatrixAnswers:
                     lhs_dict[matri_name.pop().strip()] = A
                 mtrilist.clear()
             i += 1
+        print ("dictionary is ", lhs_dict)
         logger.info('Finish question reading')
         return lhs_dict
 
@@ -111,10 +112,10 @@ class MatrixAnswers:
         ques = MatrixAnswers().read_question()
         logger.info('Reading answers')
         #open the answer file
-        with open('myscheme.xml') as scheme:
-            for line in scheme:
-                scheme_soup = BeautifulSoup(line, "html.parser")
-        with open('2010_answer1.html') as answer:
+        # with open('myscheme.xml') as scheme:
+        #     for line in scheme:
+        #         scheme_soup = BeautifulSoup(line, "html.parser")
+        with open('2010_type3_ans1.html') as answer:
             i = 0
             #parse the answer file
             for line in answer:
