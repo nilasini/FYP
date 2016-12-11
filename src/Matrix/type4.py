@@ -49,14 +49,20 @@ class Type4(Logs):
             isContainVariable = False
             # parse the answer file
             size = len(self.question['left_var'])
-            print('size is ',len(self.question['left_var']))
             if size > 1:
                 print()
             else:
                 J = MatrixSymbol('J', self.row_size, self.col_size)
+                var=self.question['left_var'].pop().strip()
+                print('var ', var)
                 if self.question['operator_left']=='+':
-                    result = self.question['left_var'].pop() + self.question['left']
-                    print(result)
+                    if re.search(r'\d', var):
+                        s = var[1:2]
+                        M = MatrixSymbol('M',self.row_size,self.col_size)
+                        ans_matrix = int(var[0:1]) * Matrix(M)
+                    result = solve(ans_matrix + self.question['left']-self.question['right'], Matrix(M))
+                    res = Matrix(M).xreplace(result)
+                    print('res ', res,' result', result)
             if self.question['left_var']:
                 L = self.question['left']
                 K = self.question['right']
