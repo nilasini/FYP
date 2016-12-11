@@ -65,13 +65,13 @@ class Question(Logs):
                 length = len(matri_name)
                 matrix_leftside = ''
                 list = [mtrilist[x:x + col_size] for x in range(0, len(mtrilist), col_size)]
-                A = Matrix(list)
+                M = Matrix(list)
                 if length > 2:
                     for d in range(0, length):
                         matrix_leftside += matri_name.pop().strip()
-                    lhs_dict[matrix_leftside.strip()] = A
+                    lhs_dict[matrix_leftside.strip()] = M
                 else:
-                    lhs_dict[matri_name.pop().strip()] = A
+                    lhs_dict[matri_name.pop().strip()] = M
                 mtrilist.clear()
             i += 1
         self.logger.info('Finish question reading')

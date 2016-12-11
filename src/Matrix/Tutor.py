@@ -1,14 +1,20 @@
 from logger_details import Logs
-from question import Question
-from answer import Answer
+# from question import Question
+from scheme import Scheme
+from answerMarker import Answer
+from xxx import Question
 
 
 class Tutor:
     logs = Logs()
-    question = Question('./Files/questions/Type2/SampleQ1.html', logs.logger)
-    #read the question file
-    ques = question.readQuestion()
-    answer = Answer('./Files/schemes/Type2/sampleQ1_S.html', './Files/answers/Type2/sampleA1_1.html', ques, logs.logger)
-    #read and mark the answer file
-    answer.markAnswer()
+    question = Question('./Files/questions/Type4/sampleQ1.html', logs.logger)
+    #ques = question.readQuestion()
+
+    scheme = Scheme('./Files/schemes/Type3/sampleQ1_S.html', logs.logger)
+    scheme_parsed = scheme.readScheme()
+
+    answer = Answer(question, scheme_parsed, './Files/answers/Type3/sampleA1_1.html', logs.logger)
+    # read and mark the answer file
+    answer.grading()
+
 

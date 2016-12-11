@@ -22,7 +22,7 @@ class Marks:
         isfound = True
         isfoundrow = True
         with open('myscheme.xml') as scheme:
-            i=0
+            i = 0
             for line in scheme:
                 scheme_soup = BeautifulSoup(line, "html.parser")
                 if 'data' in line and '/data' not in line:

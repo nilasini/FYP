@@ -7,7 +7,6 @@ class Answer(Logs):
     col_size = None
     row_size = None
 
-
     def __init__(self,scheme, answer_file, ques, logger):
         self.scheme = scheme
         self.answer_file = answer_file
@@ -34,7 +33,7 @@ class Answer(Logs):
         gotMultipliedMark = False
         gotSubsMark = False
         gotFinalStepMark = False
-        # check whether middle minusus there
+        # check whether middle minus there
         middlesubs = False
 
         self.logger.info('Reading answers')
@@ -349,4 +348,3 @@ class Answer(Logs):
                         middlesubs = False
                 i += 1
         self.logger.info('finish answer reading')
-        answer.close()
