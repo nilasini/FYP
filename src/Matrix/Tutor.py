@@ -13,7 +13,7 @@ class Tutor:
     scheme = Scheme('./Files/schemes/Type3/sampleQ1_S.html', logs.logger)
     scheme_parsed = scheme.readScheme()
 
-    answer = Answer(question, scheme_parsed, './Files/answers/Type3/sampleA1_1.html', logs.logger)
+    answer = Answer(question, scheme_parsed, './Files/answers/Type4/sampleA1_1.html', logs.logger)
     # read and mark the answer file
     answer.grading()
 
