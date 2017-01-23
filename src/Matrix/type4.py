@@ -1,7 +1,7 @@
 from logger_details import Logs
 from bs4 import BeautifulSoup
 from sympy import *
-from xxx import *
+from ques_type4 import *
 import re
 import operator
 
