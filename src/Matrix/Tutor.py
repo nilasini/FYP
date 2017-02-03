@@ -2,19 +2,21 @@ from logger_details import Logs
 # from question import Question
 from scheme import Scheme
 from answerMarker import Answer
-from ques_type4 import Question
+from question import Question
 
 
 class Tutor:
     logs = Logs()
-    question = Question('./Files/questions/Type4/sampleQ1.html', logs.logger)
+    question = Question('./Files/questions/Type2/sampleQ2.html', logs.logger)
     #ques = question.readQuestion()
 
-    scheme = Scheme('./Files/schemes/Type4/sampleQ1_S.html', logs.logger)
+    scheme = Scheme('./Files/schemes/Type2/sampleQ2_S.html', logs.logger)
     scheme_parsed = scheme.readScheme()
 
-    answer = Answer(question, scheme_parsed, './Files/answers/Type4/sampleA1_1.html', logs.logger)
+    answer = Answer(question, scheme_parsed, './Files/wrong answers/Type2/sampleA2_1.html', logs.logger)
     # read and mark the answer file
     answer.grading()
+
+
 
 

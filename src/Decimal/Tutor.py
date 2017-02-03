@@ -8,7 +8,6 @@ from question import Question
 class Tutor:
     logs = Logs()
     question = Question('./Files/questions/sampleQ1.html', logs.logger)
-    #ques = question.readQuestion()
 
     scheme = Scheme('./Files/schemes/sampleQ1_S.html', logs.logger)
     scheme_parsed = scheme.readScheme()

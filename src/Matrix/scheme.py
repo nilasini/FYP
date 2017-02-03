@@ -23,6 +23,12 @@ class Scheme(Logs):
                         marks = int(attribute1)
                         #add the concept and marks pair to a dictionary
                         scheme_dict[attribute2] = marks
+                if 'sub_question' in line:
+                    tag = scheme_soup.find('sub_question')
+                    if tag is not None:
+                        attribute3 = tag['totalmarks']
+                        tot_marks = int(attribute3)
+                        scheme_dict['totalmarks'] = tot_marks
         self.logger.info('Finish scheme reading')
         return scheme_dict
         #no need to close the file with statement will handle that

@@ -1,0 +1,1 @@
+I have used 'isclose' method to check the neraness of values. For example system need to konw 0.01 and 0.0100001 are equal.

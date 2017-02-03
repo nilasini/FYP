@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from sympy import *
 import re
 from queue import *
+from math import isclose
 
 class Answer(Logs):
 
@@ -38,21 +39,21 @@ class Answer(Logs):
             if '+' in self.question:
                 splitted_arr = self.question.split('+')
                 sym_ans = float(splitted_arr[0]) + float(splitted_arr[1])
-                if float(ans) == sym_ans:
+                if isclose(float(ans),sym_ans):
                     temp_mark = int(self.scheme['addition'])
                     print('your answer is correct. your mark for addition is ', temp_mark)
                     marks += temp_mark
             elif '-' in self.question:
                 splitted_arr = self.question.split('-')
                 sym_ans = float(splitted_arr[0]) - float(splitted_arr[1])
-                if float(ans) == sym_ans:
+                if isclose(float(ans),sym_ans):
                     temp_mark = int(self.scheme['subtraction'])
                     print('your answer is correct. your mark for subtraction is ', temp_mark)
                     marks += temp_mark
             elif '*' in self.question:
                 splitted_arr = self.question.split('*')
                 sym_ans = float(splitted_arr[0]) * float(splitted_arr[1])
-                if float(ans) == sym_ans:
+                if isclose(float(ans), sym_ans):
                     temp_mark = int(self.scheme['multiplication'])
                     print('your answer is correct. your mark for multiplication is ', temp_mark)
                     marks += temp_mark

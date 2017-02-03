@@ -17,6 +17,7 @@ class Type3(Logs):
     def markAns(self):
         x = Symbol('x')
         y = Symbol('y')
+        viceversa_ans = 0
         isfound = true
         isfoundrow = true
         mtrilist = []
@@ -38,6 +39,7 @@ class Type3(Logs):
         # check whether middle minus there
         middlesubs = False
         operator = None
+        correct_finding = 0
 
         self.logger.info('Reading answers')
         # open the answer file
@@ -169,12 +171,26 @@ class Type3(Logs):
                             if (answerofx - int(retrieveans.strip())) == 0:
                                 print('your mark for find x is ', self.scheme['findonevariable'])
                                 marks += 1
+                                correct_finding += 1
+                            elif (answerofy - int(retrieveans.strip())) == 0:
+                                viceversa_ans += 1
+                            elif (answerofx - -(int(retrieveans.strip()))) == 0:
+                                print('your answer for x has been negated')
 
                         if matrix_leftside == "y":
                             retrieveans = list.pop(0).pop(0)
                             if (answerofy - int(retrieveans.strip())) == 0:
                                 print('your mark for find y is ', self.scheme['findonevariable'])
                                 marks += 1
+                                correct_finding += 1
+                            elif (answerofx - int(retrieveans.strip())) == 0:
+                                viceversa_ans +=1
+                            elif (answerofy - -(int(retrieveans.strip()))) == 0:
+                                print('your answer for y has been negated')
+                        if viceversa_ans == 2:
+                            print('you have mirrored the answer for x and vice versa')
+                            viceversa_ans = 0
+                            break
 
                 # if student didn't write any lefthand side rather only right hand side answers were there
                 if (list and (not matri_name)) or noVarInLeft:
@@ -214,4 +230,7 @@ class Type3(Logs):
                     middlesubs = False
 
                 i += 1
-            print('your final marks is ', marks)
+            if correct_finding == 2:
+                print('your final marks is ', self.scheme['totalmarks'])
+            else:
+                print('your final marks is ', marks)
