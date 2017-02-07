@@ -191,14 +191,14 @@ class Type2(Logs):
                                     break
                                 isShowErrMsg = false
                                 # check only one row by the constant
-                                for k in range(self.question[matrix_leftside[1:2]].shape[0]):
-                                    l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
-                                    if l1 == Matrix(list).row(k):
-                                        print('you have multiplied only one row by constant when calculating and ur error is in ', Matrix(list))
-                                        isShowErrMsg = true
-                                        break
-                                if isShowErrMsg:
-                                    break
+                                # for k in range(self.question[matrix_leftside[1:2]].shape[0]):
+                                #     l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
+                                #     if l1 == Matrix(list).row(k):
+                                #         print('you have multiplied only one row by constant when calculating and ur error is in ', Matrix(list))
+                                #         isShowErrMsg = true
+                                #         break
+                                # if isShowErrMsg:
+                                #     break
                                 print('you have made a mistake in multiplication and your mistake is in ', Matrix(list))
                     else:
                         withoutcons_ansmtrix = []

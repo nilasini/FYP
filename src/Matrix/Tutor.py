@@ -7,14 +7,16 @@ from question import Question
 
 class Tutor:
     logs = Logs()
-    question = Question('./Files/questions/Type2/sampleQ2.html', logs.logger)
-    #ques = question.readQuestion()
+    #read the question
+    question = Question('./Files/questions/Type3/sampleQ1.html', logs.logger)
 
-    scheme = Scheme('./Files/schemes/Type2/sampleQ2_S.html', logs.logger)
+    #read the scheme and parse it
+    scheme = Scheme('./Files/schemes/Type3/sampleQ1_S.html', logs.logger)
     scheme_parsed = scheme.readScheme()
 
-    answer = Answer(question, scheme_parsed, './Files/wrong answers/Type2/sampleA2_1.html', logs.logger)
-    # read and mark the answer file
+    #read the answer
+    answer = Answer(question, scheme_parsed, './Files/answers/Type3/sampleA1_3.html', logs.logger)
+    #mark the answer file
     answer.grading()
 
 

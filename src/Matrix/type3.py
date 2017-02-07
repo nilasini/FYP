@@ -26,6 +26,8 @@ class Type3(Logs):
         siz = 0
         count = 0
         ispassfenced = false
+        equation = []
+        eqn_list = []
         iscontain_equals = false
         old_ans_matrix = None
         ans_matrix = None
@@ -35,7 +37,6 @@ class Type3(Logs):
         multiplied = False
         gotMultipliedMark = False
         gotSubsMark = False
-        gotFinalStepMark = False
         # check whether middle minus there
         middlesubs = False
         operator = None
@@ -52,64 +53,72 @@ class Type3(Logs):
             for line in answer:
                 ans_soup = BeautifulSoup(line, "html.parser")
                 oneStepFinished = false
-                if 'mi' in line and 'mtd' not in line and not ispassfenced:
-                    if ((ans_soup.text.strip() == str(x)) or (ans_soup.text.strip() == str(y))):
-                        isContainVariable = True
-                    temp = ans_soup.text
-                    matri_name.insert(0, temp)
-                    count += 1
                 if 'mfenced' in line:
-                    count = 0
+                    # count = 0
                     ispassfenced = true
                 if '/mfenced' in line:
                     ispassfenced = false
                     rightside_constant = None
-
-                if 'mn' in line and 'mtd' in line:
+                if '/mtr' in line and isfound:
+                    col_size = len(mtrilist)
+                    isfound = false
+                if '/mtable' in line:
+                    if isfoundrow:
+                        siz += len(mtrilist)
+                        row_size = int(siz / col_size)
+                        isfoundrow = false
+                if 'mi' in line and 'mtd' not in line and not ispassfenced and not equation:
+                    if (re.search("[a-z]", ans_soup.text.strip())):
+                        isContainVariable = True
+                        equation.append( ans_soup.text.strip())
+                    else:
+                        temp = ans_soup.text
+                        matri_name.insert(0, temp)
+                        # count += 1
+                elif '/mo' in line and not ispassfenced and not equation:
+                    if ans_soup.text == '=':
+                        iscontain_equals = ans_soup.text
+                    else:
+                        operator = ans_soup.text
+                elif 'mi' in line and equation:
+                    equation.append(ans_soup.text.strip())
+                elif 'mn' in line and 'mtd' in line:
                     if rightside_constant:
                         s_text = int(rightside_constant) * int(ans_soup.text)
                         mtrilist.insert(i, str(s_text))
                         multiplied = True
-
                     else:
                         mtrilist.insert(i, ans_soup.text)
                         # if 'x' in ans_soup.text or 'y' in ans_soup.text:
                         #     iscontain_var = true
                         if re.search("[a-z]", ans_soup.text):
                             iscontain_var = true
-                if 'mn' in line and 'mtd' not in line:
+                elif 'mn' in line and 'mtd' not in line and ispassfenced:
                     if isContainVariable:
                         mtrilist.insert(i, ans_soup.text)
                         isContainVariable = False
                     else:
                         rightside_constant = ans_soup.text
-                if '/mtr' in line and isfound:
-                    col_size = len(mtrilist)
-                    isfound = false
-                if '/mo' in line and count > 0:
+                elif 'mn' in line and 'mtd' not in line and not ispassfenced:
+                    equation.append(ans_soup.text.strip())
+                elif '/mo' in line and ispassfenced and not equation:
                     if '=' not in ans_soup.text:
                         matri_name.insert(0, ans_soup.text)
-                if '/mo' in line and count == 0:
-                    if ans_soup.text == '=':
-                        iscontain_equals = ans_soup.text
-                    else:
-                        operator = ans_soup.text
-                if '/mtable' in line:
-                    if isfoundrow:
-                        siz += len(mtrilist)
-                        row_size = int(siz / col_size)
-                        isfoundrow = false
-                if 'mspace' in line:
+                elif '/mo' in line and equation:
+                    equation.append(ans_soup.text.strip())
+                elif 'mspace' in line and equation:
+                    eqn_list.append(equation)
+                elif 'mspace' in line and not equation:
                     list = [mtrilist[x:x + col_size] for x in range(0, len(mtrilist), col_size)]
                     oneStepFinished = true
                     for elements in list:
                         for element in elements:
                             if re.search("\d[-]\d", element):
                                 middlesubs = True
-
                 iscontainplus = false
                 iscontainminus = false
                 noVarInLeft = false
+                val = ''
                 # if student write lefthand side and right hand side
                 if k == 0 and ((matri_name and list) or list):
                     matrix_question = ''
@@ -134,7 +143,6 @@ class Type3(Logs):
                         matrix_2 = int(twooperandsplitarray[1][0:1]) * self.question[twooperandsplitarray[1][1:2]]
                     elif len(twooperandsplitarray[1]) <= 1:
                         matrix_2 = self.question[twooperandsplitarray[1]]
-
                     if iscontainplus:
                         ans_matrix = matrix_1 + matrix_2
                     elif iscontainminus:
@@ -145,6 +153,7 @@ class Type3(Logs):
                     answerofy = answers.pop(y)
 
                 if matri_name and list:
+                    print('matrix name & list ', matri_name, list)
                     length = len(matri_name)
                     # more than one matrix involved
                     if length > 2:
@@ -166,31 +175,28 @@ class Type3(Logs):
                                     gotMultipliedMark = True
                                     marks += 1
 
-                        if matrix_leftside == "x":
-                            retrieveans = list.pop(0).pop(0)
-                            if (answerofx - int(retrieveans.strip())) == 0:
-                                print('your mark for find x is ', self.scheme['findonevariable'])
-                                marks += 1
-                                correct_finding += 1
-                            elif (answerofy - int(retrieveans.strip())) == 0:
-                                viceversa_ans += 1
-                            elif (answerofx - -(int(retrieveans.strip()))) == 0:
-                                print('your answer for x has been negated')
+                        # if matrix_leftside == "x":
+                        #     retrieveans = list.pop(0).pop(0)
+                        #     if (answerofx - int(retrieveans.strip())) == 0:
+                        #         print('your mark for find x is ', self.scheme['findonevariable'])
+                        #         marks += 1
+                        #         correct_finding += 1
+                        #     elif (answerofy - int(retrieveans.strip())) == 0:
+                        #         viceversa_ans += 1
+                        #     elif (answerofx - -(int(retrieveans.strip()))) == 0:
+                        #         print('your answer for x has been negated')
+                        #
+                        # if matrix_leftside == "y":
+                        #     retrieveans = list.pop(0).pop(0)
+                        #     if (answerofy - int(retrieveans.strip())) == 0:
+                        #         print('your mark for find y is ', self.scheme['findonevariable'])
+                        #         marks += 1
+                        #         correct_finding += 1
+                        #     elif (answerofx - int(retrieveans.strip())) == 0:
+                        #         viceversa_ans +=1
+                        #     elif (answerofy - -(int(retrieveans.strip()))) == 0:
+                        #         print('your answer for y has been negated')
 
-                        if matrix_leftside == "y":
-                            retrieveans = list.pop(0).pop(0)
-                            if (answerofy - int(retrieveans.strip())) == 0:
-                                print('your mark for find y is ', self.scheme['findonevariable'])
-                                marks += 1
-                                correct_finding += 1
-                            elif (answerofx - int(retrieveans.strip())) == 0:
-                                viceversa_ans +=1
-                            elif (answerofy - -(int(retrieveans.strip()))) == 0:
-                                print('your answer for y has been negated')
-                        if viceversa_ans == 2:
-                            print('you have mirrored the answer for x and vice versa')
-                            viceversa_ans = 0
-                            break
 
                 # if student didn't write any lefthand side rather only right hand side answers were there
                 if (list and (not matri_name)) or noVarInLeft:
@@ -216,6 +222,60 @@ class Type3(Logs):
                                 elif "-" in matrix_question:
                                     print('your mark for find subtraction is ', self.scheme['subtraction'])
                                     marks += 1
+                if eqn_list:
+                    val1 = eqn_list.pop()
+                    for r in val1:
+                        val += r
+                    splitted_eqn = val.split('=')
+                    if '-' in splitted_eqn[0]:
+                        splitted_leqn = splitted_eqn[0].split('-')
+                        if re.search("[a-z]", splitted_leqn[0]):
+                            if re.search("x", splitted_leqn[0]):
+                                result = ((Symbol)(splitted_leqn[0])-(int)(splitted_leqn[1])).subs(x,answerofx)
+                            else:
+                                result = (Symbol)(splitted_leqn[0] - (int)(splitted_leqn[1])).subs(y,answerofy)
+                            if result == (int)(splitted_eqn[1]):
+                                print('you are getting mark correct multiplication and subtraction in your equation ', self.scheme['equation'])
+                                marks += 1
+                        elif re.search("[a-z]", splitted_leqn[1]):
+                            if re.search("x", splitted_leqn[1]):
+                                result = ((int)(splitted_leqn[0])-(Symbol)(splitted_leqn[1])).subs(x,answerofx)
+                            else:
+                                result = ((int)(splitted_leqn[0]) - (Symbol)(splitted_leqn[1])).subs(y,answerofy)
+                            if result == (int)(splitted_eqn[1]):
+                                print('you are getting mark correct multiplication and subtraction in your equation ', self.scheme['equation'])
+                                marks += 1
+                    elif '+' in splitted_eqn[0]:
+                        splitted_leqn = splitted_eqn[0].split('+')
+
+                    else:
+                        if splitted_eqn[0] == "x":
+                            retrieveans = splitted_eqn[1]
+                            if (answerofx - int(retrieveans.strip())) == 0:
+                                print('your mark for find x is ', self.scheme['findonevariable'])
+                                marks += 1
+                                correct_finding += 1
+                            elif (answerofy - int(retrieveans.strip())) == 0:
+                                viceversa_ans += 1
+                            elif (answerofx - -(int(retrieveans.strip()))) == 0:
+                                print('your answer for x has been negated')
+                        if splitted_eqn[0] == "y":
+                            retrieveans = splitted_eqn[1]
+                            if (answerofy - int(retrieveans.strip())) == 0:
+                                print('your mark for find y is ', self.scheme['findonevariable'])
+                                marks += 1
+                                correct_finding += 1
+                            elif (answerofx - int(retrieveans.strip())) == 0:
+                                viceversa_ans += 1
+                            elif (answerofy - -(int(retrieveans.strip()))) == 0:
+                                print('your answer for x has been negated')
+                        if viceversa_ans == 2:
+                            print('you have mirrored the answer for x and vice versa')
+                            viceversa_ans = 0
+                            break
+
+                    eqn_list.clear()
+                    equation.clear()
                 if oneStepFinished:
                     iscontain_var = false
                     list.clear()
@@ -232,5 +292,6 @@ class Type3(Logs):
                 i += 1
             if correct_finding == 2:
                 print('your final marks is ', self.scheme['totalmarks'])
+
             else:
                 print('your final marks is ', marks)
