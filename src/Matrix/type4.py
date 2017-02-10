@@ -3,19 +3,20 @@ from bs4 import BeautifulSoup
 from sympy import *
 from ques_type4 import *
 import re
+import time
+from threading import Thread
 import operator
 
 
 class Type4(Logs):
 
-    def __init__(self, ques, scheme, answer_file, logger):
+    def __init__(self, ques, col_size, row_size, scheme, answer_file, logger):
         self.scheme = scheme
         self.answer_file = answer_file
         self.logger = logger
-        self.question = ques.readQuestion()
-        self.col_size = ques.col_size
-        self.row_size = ques.row_size
-
+        self.question = ques
+        self.col_size = col_size
+        self.row_size = row_size
 
     def markAns(self):
         isfoundcol = true
@@ -77,6 +78,7 @@ class Type4(Logs):
             # #         print('reskkkkkk', res)
             # #     print()
             # else:
+            #rearrange the question
             var=self.question['left_var'].pop().strip()
             if self.question['operator_left'] == '+':
                 if re.search(r'\d', var):
@@ -97,6 +99,7 @@ class Type4(Logs):
             # parse the answer file
             for line in answer:
                 ans_soup = BeautifulSoup(line, "html.parser")
+                oneStepFinished = false
                 if 'mi' in line and 'mtd' not in line and not ispassfenced:
                     temp = ans_soup.text
                     matri_name.insert(i, temp)
@@ -134,6 +137,7 @@ class Type4(Logs):
                         row_size = int(siz / col_size)
                         isfoundrow = false
                 if 'mspace' in line:
+                    oneStepFinished = true
                     list = [mtrilist[x:x + col_size] for x in range(0, len(mtrilist), col_size)]
                     for elements in list:
                         for element in elements:
@@ -148,39 +152,35 @@ class Type4(Logs):
                     matrix_leftside = matri_name.pop().strip()
                     if re.search(r'\d', matrix_leftside):
                         ans_matrix = int(matrix_leftside[0:1]) * res
-                        subs_matrix = ans_matrix - Matrix(list)
-                        if subs_matrix == zeros(row_size, col_size):
-                            print('your mark for substitution ')
-                            marks += 1
+                        if not operator:
+                            subs_matrix = ans_matrix - Matrix(list)
+                            if subs_matrix == zeros(row_size, col_size):
+                                print('your mark for substitution ')
+                                marks += 1
                     else:
                         subs_matrix = res - Matrix(list)
                         if subs_matrix == zeros(row_size, col_size):
                             print('your mark for substitution ')
                             marks += 1
-                        list.clear()
-                        mtrilist.clear()
-                        isfoundrow = true
-                        matri_name.clear()
-                        siz = 0
-                        count = 0
-                        multiplied = False
-                        middlesubs = False
                 elif list:
                     subs_matrix = res - Matrix(list)
                     if subs_matrix == zeros(row_size, col_size):
                         print('your mark for substitution ')
                         marks += 1
+                if oneStepFinished:
                     list.clear()
                     mtrilist.clear()
                     isfoundrow = true
                     matri_name.clear()
                     siz = 0
                     count = 0
+                    operator = None
                     multiplied = False
                     middlesubs = False
                 i += 1
             print('your final marks is ', marks)
-
+        time.sleep(0.1)
+        self.logger.info('Finish answer reading')
 
 
 

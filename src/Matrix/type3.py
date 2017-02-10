@@ -2,9 +2,11 @@ from logger_details import Logs
 from bs4 import BeautifulSoup
 from sympy import *
 import re
+import time
+from threading import Thread
 
 
-class Type3(Logs):
+class Type3(Logs, Thread):
     col_size = None
     row_size = None
 
@@ -36,11 +38,14 @@ class Type3(Logs):
         # check whether the step is already multiplied by the system
         multiplied = False
         gotMultipliedMark = False
+        gotequationmark = False
         gotSubsMark = False
         # check whether middle minus there
         middlesubs = False
         operator = None
         correct_finding = 0
+        iseqnforxcrct = true
+        iseqnforycrct = true
 
         self.logger.info('Reading answers')
         # open the answer file
@@ -119,8 +124,8 @@ class Type3(Logs):
                 iscontainminus = false
                 noVarInLeft = false
                 val = ''
-                # if student write lefthand side and right hand side
-                if k == 0 and ((matri_name and list) or list):
+                # if student write left hand side and right hand side
+                if k == 0:
                     matrix_question = ''
                     for element in self.question:
                         if re.search("[0-9]?[A-Z][-|+][0-9]?[A-Z]", element):
@@ -153,7 +158,6 @@ class Type3(Logs):
                     answerofy = answers.pop(y)
 
                 if matri_name and list:
-                    print('matrix name & list ', matri_name, list)
                     length = len(matri_name)
                     # more than one matrix involved
                     if length > 2:
@@ -167,6 +171,7 @@ class Type3(Logs):
                         # check the substitution is in the middle step rather than first step
                         matrix_leftside = matri_name.pop().strip()
                         if re.search(r'\d', matrix_leftside):
+                            withoutcons_ans_matrix = self.question[matrix_leftside[1:2]]
                             ans_matrix = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]]
                             subs_matrix = ans_matrix - Matrix(list)
                             if subs_matrix == zeros(row_size, col_size):
@@ -174,42 +179,22 @@ class Type3(Logs):
                                     print('your mark for multiplication ', self.scheme['multiplication'])
                                     gotMultipliedMark = True
                                     marks += 1
-
-                        # if matrix_leftside == "x":
-                        #     retrieveans = list.pop(0).pop(0)
-                        #     if (answerofx - int(retrieveans.strip())) == 0:
-                        #         print('your mark for find x is ', self.scheme['findonevariable'])
-                        #         marks += 1
-                        #         correct_finding += 1
-                        #     elif (answerofy - int(retrieveans.strip())) == 0:
-                        #         viceversa_ans += 1
-                        #     elif (answerofx - -(int(retrieveans.strip()))) == 0:
-                        #         print('your answer for x has been negated')
-                        #
-                        # if matrix_leftside == "y":
-                        #     retrieveans = list.pop(0).pop(0)
-                        #     if (answerofy - int(retrieveans.strip())) == 0:
-                        #         print('your mark for find y is ', self.scheme['findonevariable'])
-                        #         marks += 1
-                        #         correct_finding += 1
-                        #     elif (answerofx - int(retrieveans.strip())) == 0:
-                        #         viceversa_ans +=1
-                        #     elif (answerofy - -(int(retrieveans.strip()))) == 0:
-                        #         print('your answer for y has been negated')
-
-
+                            else:
+                                if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
+                                    print('you have forgotten to muliply by the constant ', matrix_leftside[0:1])
+                                    break
+                                if not multiplied:
+                                    print('you have made mistake in multiplication in calculation of ', matrix_leftside)
+                                    break
                 # if student didn't write any lefthand side rather only right hand side answers were there
                 if (list and (not matri_name)) or noVarInLeft:
                     multiplied = False
                     middlesubs = False
                     if iscontain_var:
-                        #stu_ans_matr2 = list[row_size:len(list)]
-                        #if str(operator).strip() == '+':
                             stu_ans_matr1 = list[0:row_size]
                             stu_ans = Matrix(stu_ans_matr1)
                             stu_ans_temp = stu_ans.replace(x, answerofx)
                             stu_ans = stu_ans_temp.replace(y, answerofy)
-
                             subs_matrix = self.question[matrix_question] - stu_ans
                             if subs_matrix == zeros(row_size, col_size):
                                 if len(list) / row_size > 1 and not multiplied and not gotMultipliedMark:
@@ -222,6 +207,13 @@ class Type3(Logs):
                                 elif "-" in matrix_question:
                                     print('your mark for find subtraction is ', self.scheme['subtraction'])
                                     marks += 1
+                            else:
+                                if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
+                                    print('you have forgotten to muliply by the constant ', matrix_leftside[0:1])
+                                    break
+                                if not multiplied:
+                                    print('you have made mistake in multiplication in calculation of ', matrix_leftside)
+                                    break
                 if eqn_list:
                     val1 = eqn_list.pop()
                     for r in val1:
@@ -229,29 +221,142 @@ class Type3(Logs):
                     splitted_eqn = val.split('=')
                     if '-' in splitted_eqn[0]:
                         splitted_leqn = splitted_eqn[0].split('-')
-                        if re.search("[a-z]", splitted_leqn[0]):
+                        if re.search("[a-z]", splitted_leqn[0]) and re.search("[a-z]", splitted_leqn[1]):
+                            if re.search(r'\d', splitted_leqn[0]):
+                                result1 = int(splitted_leqn[0][0:1]) * (Symbol(splitted_leqn[0][1:2]))
+                            else:
+                                result1 = Symbol(splitted_leqn[0])
+                            if re.search(r'\d', splitted_leqn[1]):
+                                result2 = int(splitted_leqn[1][0:1]) * (Symbol(splitted_leqn[1][1:2]))
+                            else:
+                                result2 = Symbol(splitted_leqn[1])
+                            result = (result1 - result2).subs({x:answerofx, y:answerofy})
+                            if result == (int)(splitted_eqn[1]) and gotMultipliedMark and not gotequationmark:
+                                print('you are getting mark for correct equation ', self.scheme['equation'])
+                                gotequationmark = true
+                                marks += 1
+                            else:
+                                print('you are in lack of understanding in how to make an algebraic equation from a matrix equation')
+                        elif re.search("[a-z]", splitted_leqn[0]):
                             if re.search("x", splitted_leqn[0]):
                                 result = ((Symbol)(splitted_leqn[0])-(int)(splitted_leqn[1])).subs(x,answerofx)
+                                if result == (int)(splitted_eqn[1]) and gotMultipliedMark and not gotequationmark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                if not result == (int)(splitted_eqn[1]):
+                                    iseqnforxcrct = false
+                                    print('equation for x is wrong, you are in lack of understanding in how to make an algebraic equation from a matrix equation')
                             else:
                                 result = (Symbol)(splitted_leqn[0] - (int)(splitted_leqn[1])).subs(y,answerofy)
-                            if result == (int)(splitted_eqn[1]):
-                                print('you are getting mark correct multiplication and subtraction in your equation ', self.scheme['equation'])
-                                marks += 1
+                                if result == (int)(splitted_eqn[1]) and gotMultipliedMark and not gotequationmark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                if not result == (int)(splitted_eqn[1]):
+                                    print('equation for y is wrong, you are in lack of understanding in how to make an algebraic equation from a matrix equation')
+                                    iseqnforycrct = false
                         elif re.search("[a-z]", splitted_leqn[1]):
                             if re.search("x", splitted_leqn[1]):
-                                result = ((int)(splitted_leqn[0])-(Symbol)(splitted_leqn[1])).subs(x,answerofx)
+                                result = ((int)(splitted_leqn[0])-(Symbol)(splitted_leqn[1])).subs(x, answerofx)
+                                if result == (int)(splitted_eqn[1]) and gotMultipliedMark and not gotequationmark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                elif result == (int)(splitted_eqn[1]) and not gotMultipliedMark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                if not result == (int)(splitted_eqn[1]):
+                                    print('equation for x is wrong, you are in lack of understanding in how to make an algebraic equation from a matrix equation')
+                                    iseqnforxcrct = false
                             else:
-                                result = ((int)(splitted_leqn[0]) - (Symbol)(splitted_leqn[1])).subs(y,answerofy)
-                            if result == (int)(splitted_eqn[1]):
-                                print('you are getting mark correct multiplication and subtraction in your equation ', self.scheme['equation'])
-                                marks += 1
+                                result = ((int)(splitted_leqn[0]) - (Symbol)(splitted_leqn[1])).subs(y, answerofy)
+                                if result == (int)(splitted_eqn[1]) and gotMultipliedMark and not gotequationmark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                elif result == (int)(splitted_eqn[1]) and not gotMultipliedMark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                if not result == (int)(splitted_eqn[1]):
+                                    print('equation for y is wrong, you are in lack of understanding in how to make an algebraic equation from a matrix equation')
+                                    iseqnforycrct = false
                     elif '+' in splitted_eqn[0]:
                         splitted_leqn = splitted_eqn[0].split('+')
-
+                        if re.search("[a-z]", splitted_leqn[0]) and re.search("[a-z]", splitted_leqn[1]):
+                            if re.search(r'\d', splitted_leqn[0]):
+                                result1 = int(splitted_leqn[0][0:1]) * (Symbol(splitted_leqn[0][1:2]))
+                            else:
+                                result1 = Symbol(splitted_leqn[0])
+                            if re.search(r'\d', splitted_leqn[1]):
+                                result2 = int(splitted_leqn[1][0:1]) * (Symbol(splitted_leqn[1][1:2]))
+                            else:
+                                result2 = Symbol(splitted_leqn[1])
+                            result = (result1 + result2).subs({x:answerofx, y:answerofy})
+                            if result == (int)(splitted_eqn[1]) and gotMultipliedMark and not gotequationmark:
+                                print('you are getting mark for correct equation ', self.scheme['equation'])
+                                gotequationmark = true
+                                marks += 1
+                            else:
+                                print('you are in lack of understanding in how to make an algebraic equation from a matrix equation')
+                        elif re.search("[a-z]", splitted_leqn[0]):
+                            if re.search("x", splitted_leqn[0]):
+                                result = ((Symbol)(splitted_leqn[0]) + (int)(splitted_leqn[1])).subs(x, answerofx)
+                                if result == (int)(splitted_eqn[1]) and gotMultipliedMark and not gotequationmark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                else:
+                                    print('equation for x is wrong, you are in lack of understanding in how to make an algebraic equation from a matrix equation')
+                                    iseqnforxcrct = false
+                            else:
+                                result = (Symbol)(splitted_leqn[0] + (int)(splitted_leqn[1])).subs(y, answerofy)
+                                if result == (int)(splitted_eqn[1]) and gotMultipliedMark and not gotequationmark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                else:
+                                    print('equation for y is wrong, you are in lack of understanding in how to make an algebraic equation from a matrix equation')
+                                    iseqnforycrct = false
+                        elif re.search("[a-z]", splitted_leqn[1]):
+                            if re.search("x", splitted_leqn[1]):
+                                result = ((int)(splitted_leqn[0]) + (Symbol)(splitted_leqn[1])).subs(x, answerofx)
+                                if result == (int)(splitted_eqn[1]) and gotMultipliedMark and not gotequationmark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                else:
+                                    print('equation for x is wrong, you are in lack of understanding in how to make an algebraic equation from a matrix equation')
+                                    iseqnforxcrct = false
+                            else:
+                                result = ((int)(splitted_leqn[0]) + (Symbol)(splitted_leqn[1])).subs(y, answerofy)
+                                if result == (int)(splitted_eqn[1]) and gotMultipliedMark and not gotequationmark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                else:
+                                    print('equation for y is wrong, you are in lack of understanding in how to make an algebraic equation from a matrix equation')
+                                    iseqnforycrct = false
                     else:
                         if splitted_eqn[0] == "x":
-                            retrieveans = splitted_eqn[1]
-                            if (answerofx - int(retrieveans.strip())) == 0:
+                            retrieveans = splitted_eqn[1].strip()
+                            if re.search("[0-9]+[+|-][0-9]+", retrieveans):
+                                if "-" in retrieveans:  # check for x=6-1 type answers
+                                    splitted_ans = retrieveans.split('-')
+                                    retrieveans = int(splitted_ans[0]) - int(splitted_ans[1])
+                                elif "+" in retrieveans:
+                                    splitted_ans = retrieveans.split('+')
+                                    retrieveans = int(splitted_ans[0]) + int(splitted_ans[1])
+                                if not gotequationmark and (answerofx - int(retrieveans)) == 0 and gotMultipliedMark and not gotequationmark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                    iseqnforxcrct = true
+                                else:
+                                    print('equation for x is wrong, you are in lack of understanding in how to make an algebraic equation from a matrix equation')
+                            elif (answerofx - int(retrieveans)) == 0 and ((gotequationmark and iseqnforxcrct) or (not gotequationmark and not iseqnforxcrct)):
                                 print('your mark for find x is ', self.scheme['findonevariable'])
                                 marks += 1
                                 correct_finding += 1
@@ -259,18 +364,36 @@ class Type3(Logs):
                                 viceversa_ans += 1
                             elif (answerofx - -(int(retrieveans.strip()))) == 0:
                                 print('your answer for x has been negated')
+                            else:
+                                print('your value for x is wrong')
                         if splitted_eqn[0] == "y":
-                            retrieveans = splitted_eqn[1]
-                            if (answerofy - int(retrieveans.strip())) == 0:
+                            retrieveans = splitted_eqn[1].strip()
+                            if re.search("[0-9]*[+|-][0-9]*", retrieveans):
+                                if "-" in retrieveans:  # check for x=6-1 type answers
+                                    splitted_ans = retrieveans.split('-')
+                                    retrieveans = int(splitted_ans[0]) - int(splitted_ans[1])
+                                elif "+" in retrieveans:
+                                    splitted_ans = retrieveans.split('+')
+                                    retrieveans = int(splitted_ans[0]) + int(splitted_ans[1])
+                                if not gotequationmark and (
+                                    answerofx - int(retrieveans)) == 0 and gotMultipliedMark and not gotequationmark:
+                                    print('you are getting mark for correct equation ', self.scheme['equation'])
+                                    gotequationmark = true
+                                    marks += 1
+                                else:
+                                    print('equation for y is wrong, you are in lack of understanding in how to make an algebraic equation from a matrix equation')
+                            elif (answerofy - int(retrieveans.strip())) == 0 and ((gotequationmark and iseqnforycrct) or (not gotequationmark and not iseqnforycrct)):
                                 print('your mark for find y is ', self.scheme['findonevariable'])
                                 marks += 1
                                 correct_finding += 1
                             elif (answerofx - int(retrieveans.strip())) == 0:
                                 viceversa_ans += 1
                             elif (answerofy - -(int(retrieveans.strip()))) == 0:
-                                print('your answer for x has been negated')
+                                print('your answer for y has been negated')
+                            else:
+                                print('your value for y is wrong')
                         if viceversa_ans == 2:
-                            print('you have mirrored the answer for x and vice versa')
+                            print('you have mirrored the answer for x and y')
                             viceversa_ans = 0
                             break
 
@@ -290,8 +413,6 @@ class Type3(Logs):
                     middlesubs = False
 
                 i += 1
-            if correct_finding == 2:
-                print('your final marks is ', self.scheme['totalmarks'])
-
-            else:
-                print('your final marks is ', marks)
+            print('your final marks is ', marks)
+        time.sleep(0.1)
+        self.logger.info('Finish answer reading')

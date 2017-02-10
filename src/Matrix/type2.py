@@ -2,9 +2,12 @@ from logger_details import Logs
 from bs4 import BeautifulSoup
 from sympy import *
 import re
+import time
+import numpy as np
+from threading import Thread
 
 
-class Type2(Logs):
+class Type2(Logs, Thread):
     col_size = None
     row_size = None
 
@@ -40,9 +43,10 @@ class Type2(Logs):
             marks = 0
             # parse the answer file
             for line in answer:
+                oneStepFinished = false
                 ans_soup = BeautifulSoup(line, "html.parser")
                 if 'mi' in line and 'mtd' not in line and not ispassfenced:
-                    temp = ans_soup.text
+                    temp = ans_soup.text.strip()
                     matri_name.insert(i, temp)
                     count += 1
                 if 'mfenced' in line and '/mfenced' not in line:
@@ -53,31 +57,32 @@ class Type2(Logs):
                     rightside_constant = None
                 if 'mn' in line and 'mtd' in line:
                     if rightside_constant:
-                        s_text = int(rightside_constant) * int(ans_soup.text)
+                        s_text = int(rightside_constant) * int(ans_soup.text.strip())
                         mtrilist.insert(i, str(s_text))
                         multiplied = True
                     else:
-                        mtrilist.insert(i, ans_soup.text)
+                        mtrilist.insert(i, ans_soup.text.strip())
                 if 'mn' in line and 'mtd' not in line:
-                    rightside_constant = ans_soup.text
+                    rightside_constant = ans_soup.text.strip()
                 if '/mtr' in line and isfoundcol:
                     col_size = len(mtrilist)
                     isfoundcol = false
                 if '/mo' in line and count > 0:
                     if '=' not in ans_soup.text:
-                        matri_name.insert(0, ans_soup.text)
+                        matri_name.insert(0, ans_soup.text.strip())
                 if '/mo' in line and count == 0:
                     if ans_soup.text == '=':
                         # student use = for each step starting instead of LHS
-                        iscontain_equals = ans_soup.text
+                        iscontain_equals = ans_soup.text.strip()
                     else:
-                        operator = ans_soup.text
+                        operator = ans_soup.text.strip()
                 if '/mtable' in line:
                     if isfoundrow:
                         siz += len(mtrilist)
                         row_size = int(siz / col_size)
                         isfoundrow = false
                 if 'mspace' in line:
+                    oneStepFinished = true
                     list = [mtrilist[x:x + col_size] for x in range(0, len(mtrilist), col_size)]
                     for elements in list:
                         for element in elements:
@@ -113,12 +118,11 @@ class Type2(Logs):
                                     print('your mark for substitution ', self.scheme['substitution'])
                                     gotSubsMark = True
                                     marks += 1
-
                                 else:
-                                    if multiplied and not gotSubsMark:
-                                        print('your mark for substitution ', self.scheme['substitution'])
-                                        gotSubsMark = True
-                                        marks += 1
+                                    # if multiplied and not gotSubsMark:
+                                    #     print('your mark for substitution ', self.scheme['substitution'])
+                                    #     gotSubsMark = True
+                                    #     marks += 1
                                     if len(list) / row_size > 1 and not multiplied and not gotMultipliedMark:
                                         print('your mark for multiplication ', self.scheme['multiplication'])
                                         gotMultipliedMark = True
@@ -127,21 +131,11 @@ class Type2(Logs):
                                         print('your mark for substitution ', self.scheme['substitution'])
                                         gotSubsMark = True
                                         marks += 1
-                                    if middlesubs and not gotSubsMark:
-                                        print('your mark for substitution ', self.scheme['substitution'])
-                                        gotSubsMark = True
-                                        marks += 1
+                                    # if middlesubs and not gotSubsMark:
+                                    #     print('your mark for substitution ', self.scheme['substitution'])
+                                    #     gotSubsMark = True
+                                    #     marks += 1
                             else:
-                                isShowErrMsg = false
-                                # check only one row by the constant
-                                for k in range(self.question[matrix_leftside[1:2]].shape[0]):
-                                    l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
-                                    if l1 == Matrix(list).row(k):
-                                        print('you have multiplied only one row by constant when calculating ',matrix_leftside )
-                                        isShowErrMsg = true
-                                        break
-                                if isShowErrMsg:
-                                    break
                                 if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
                                     print('you have forgotten to muliply by the constant ', matrix_leftside[0:1])
                                     break
@@ -154,15 +148,34 @@ class Type2(Logs):
                                 if middlesubs:
                                     print('you have made mistake in substitution of ', matrix_leftside[1:2])
                                     break
-
-                            list.clear()
-                            mtrilist.clear()
-                            isfoundrow = true
-                            matri_name.clear()
-                            siz = 0
-                            count = 0
-                            multiplied = False
-                            middlesubs = False
+                                isShowErrMsg = false
+                                # check only one row by the constant
+                                # mulipliedonerow = false
+                                # notmultipliedonerow = false
+                                # num = 0
+                                # # check only one row by the constant
+                                # for k in range(ans_matrix.shape[0]):
+                                #     l1 = ans_matrix.row(k)
+                                #     if l1 == stu_ans.row(k):
+                                #         mulipliedonerow = true
+                                #         num += 1
+                                # for k in range(withoutcons_ansmtrix.shape[0]):
+                                #     l1 = withoutcons_ansmtrix.row(k)
+                                #     if l1 == stu_ans.row(k):
+                                #         notmultipliedonerow = true
+                                #         num += 1
+                                # if num == ans_matrix.shape[0]:
+                                #     print('you have forgotten to multiply one or more row by constant ', matrix_question)
+                                #     break
+                                # num = 0
+                                # for k in range(self.question[matrix_leftside[1:2]].shape[0]):
+                                #     l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
+                                #     if l1 == Matrix(list).row(k):
+                                #         num += 1
+                                #         isShowErrMsg = true
+                                # if isShowErrMsg:
+                                #     print('you have multiplied correctly only ', num,' row by constant when calculating ',matrix_leftside)
+                                #     break
                 if list or isTwoMatrixInvolved:
                     matrix_question = self.question['ques']
                     twooperandsplitarray = []
@@ -189,17 +202,38 @@ class Type2(Logs):
                                 if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
                                     print('you have forgotten to muliply by the constant and ur mistake is in ', Matrix(list))
                                     break
-                                isShowErrMsg = false
+                                # isShowErrMsg = false
                                 # check only one row by the constant
+                                # num = 0
                                 # for k in range(self.question[matrix_leftside[1:2]].shape[0]):
                                 #     l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
                                 #     if l1 == Matrix(list).row(k):
-                                #         print('you have multiplied only one row by constant when calculating and ur error is in ', Matrix(list))
+                                #         num += 1
                                 #         isShowErrMsg = true
-                                #         break
                                 # if isShowErrMsg:
+                                #     print('you have multiplied correctly only ', num, ' row by constant when calculating ', matrix_leftside)
                                 #     break
-                                print('you have made a mistake in multiplication and your mistake is in ', Matrix(list))
+                                # mulipliedonerow = false
+                                # notmultipliedonerow = false
+                                # num = 0
+                                # # check only one row by the constant
+                                # for k in range(ans_matrix.shape[0]):
+                                #     l1 = ans_matrix.row(k)
+                                #     if l1 == stu_ans.row(k):
+                                #         mulipliedonerow = true
+                                #         num += 1
+                                # for k in range(withoutcons_ansmtrix.shape[0]):
+                                #     l1 = withoutcons_ansmtrix.row(k)
+                                #     if l1 == stu_ans.row(k):
+                                #         notmultipliedonerow = true
+                                #         num += 1
+                                # if num == ans_matrix.shape[0]:
+                                #     print('you have forgotten to multiply one or more row by constant ',
+                                #           matrix_question)
+                                #     break
+                                else:
+                                    print('you have made a mistake in multiplication and your mistake is in ', Matrix(list))
+                                    break
                     else:
                         withoutcons_ansmtrix = []
                         if len(twooperandsplitarray[0]) > 1:
@@ -214,7 +248,6 @@ class Type2(Logs):
                         elif len(twooperandsplitarray[1]) <= 1:
                             matrix_2 = self.question[twooperandsplitarray[1]]
                             withoutcons_matrix_2 = matrix_2
-
                         if iscontainplus:
                             ans_matrix = matrix_1 + matrix_2
                             inverseans_matrix = matrix_1 - matrix_2
@@ -227,7 +260,6 @@ class Type2(Logs):
                             withoutcons_ansmtrix.append(withoutcons_matrix1 - withoutcons_matrix_2)
                             withoutcons_ansmtrix.append(matrix_1 - withoutcons_matrix_2)
                             withoutcons_ansmtrix.append(withoutcons_matrix1 - matrix_2)
-
                         stu_ans_matr1 = list[0:row_size]
                     if operator:
                         stu_ans_matr2 = list[row_size:len(list)]
@@ -256,41 +288,49 @@ class Type2(Logs):
                                 isShowErrMsg = false
                                 for val in range(len(withoutcons_ansmtrix)):
                                     if val - stu_ans == zeros(row_size, col_size):
-                                        print('you have forgotten to muliply by the constant ur error is in ', stu_ans)
+                                        print('you have forgotten to muliply by the constant in ', stu_ans)
                                         isShowErrMsg =true
                                         break
                                 if isShowErrMsg:
                                     break
                                 # check only one row by the constant
-                                for k in range(self.question[matrix_leftside[1:2]].shape[0]):
-                                    l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
-                                    if l1 == Matrix(list).row(k):
-                                        print('you have multiplied only one row by constant when calculating ',
-                                              matrix_leftside)
-                                        isShowErrMsg = true
-                                        break
-                                if isShowErrMsg:
-                                    break
+                                # mulipliedonerow = false
+                                # notmultipliedonerow = false
+                                # num = 0
+                                # # check only one row by the constant
+                                # for k in range(ans_matrix.shape[0]):
+                                #     l1 = ans_matrix.row(k)
+                                #     if l1 == stu_ans.row(k):
+                                #         mulipliedonerow = true
+                                #         num += 1
+                                # for k in range(withoutcons_ansmtrix.shape[0]):
+                                #     l1 = withoutcons_ansmtrix.row(k)
+                                #     if l1 == stu_ans.row(k):
+                                #         notmultipliedonerow = true
+                                #         num += 1
+                                # if num == ans_matrix.shape[0]:
+                                #     print('you have forgotten to multiply one or more row by constant ',
+                                #           matrix_question)
+                                #     break
+                                # num = 0
+                                # for k in range(self.question[matrix_leftside[1:2]].shape[0]):
+                                #     l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
+                                #     if l1 == Matrix(list).row(k):
+                                #         num += 1
+                                #         isShowErrMsg = true
+                                # if isShowErrMsg:
+                                #     print('you have multiplied correctly only ', num,
+                                #           ' row by constant when calculating ', matrix_leftside)
+                                #     break
                                 if multiplied:
                                     print('you have made a mistake in substitution and your mistake is ', twooperandsplitarray[0][1:2] + twooperandsplitarray[1][1:2])
                                     break
                                 if len(list) / row_size > 1 and not multiplied:
-                                    print('you have made a mistake in multiplication and your mistake is ')
+                                    print('you have made a mistake in multiplication when finding ', matrix_question)
                                     break
                                 if middlesubs:
-                                    print('you have made a mistake in substitution and ur mistake is ')
+                                    print('you have made a mistake in substitution and ur mistake is in ', stu_ans)
                                     break
-                            list.clear()
-                            mtrilist.clear()
-                            isfoundrow = true
-                            matri_name.clear()
-                            siz = 0
-                            count = 0
-                            multiplied = False
-                            middlesubs = False
-                            operator = None
-
-
                         elif str(operator).strip() == '-':
                             stu_ans = Matrix(stu_ans_matr1) - Matrix(stu_ans_matr2)
                             subs_matrix = ans_matrix - stu_ans
@@ -314,41 +354,51 @@ class Type2(Logs):
                                     marks += 1
                             else:
                                 isShowErrMsg = false
-                                for val in (withoutcons_ansmtrix):
+                                for val in withoutcons_ansmtrix:
                                     if val - stu_ans == zeros(row_size, col_size):
-                                        print('you have forgotten to muliply by the constant and ur error is in ', stu_ans)
+                                        print('you have forgotten to muliply by the constant and ur error is in ', matrix_question)
                                         isShowErrMsg =true
                                         break
                                 if isShowErrMsg:
                                     break
                                 # check only one row by the constant
-                                for k in range(ans_matrix.shape[0]):
-                                    l1 = ans_matrix.row(k)
-                                    if l1 == stu_ans.row(k):
-                                        print('you have multiplied only one row by constant when calculating ',stu_ans)
-                                        isShowErrMsg = true
-                                        break
-                                if isShowErrMsg:
-                                    break
+                                # num = 0
+                                # for k in range(self.question[matrix_leftside[1:2]].shape[0]):
+                                #     l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
+                                #     if l1 == Matrix(list).row(k):
+                                #         num += 1
+                                #         isShowErrMsg = true
+                                # if isShowErrMsg:
+                                #     print('you have multiplied correctly only ', num,
+                                #           ' row by constant when calculating ', matrix_leftside)
+                                #     break
+                                # mulipliedonerow = false
+                                # notmultipliedonerow = false
+                                # num = 0
+                                # # check only one row by the constant
+                                # for k in range(ans_matrix.shape[0]):
+                                #     l1 = ans_matrix.row(k)
+                                #     if l1 == stu_ans.row(k):
+                                #         mulipliedonerow = true
+                                #         num += 1
+                                # for k in range(withoutcons_ansmtrix.shape[0]):
+                                #     l1 = withoutcons_ansmtrix.row(k)
+                                #     if l1 == stu_ans.row(k):
+                                #         notmultipliedonerow = true
+                                #         num += 1
+                                # if num == ans_matrix.shape[0]:
+                                #     print('you have forgotten to multiply one or more row by constant ',
+                                #           matrix_question)
+                                #     break
                                 if multiplied:
-                                    print('you have made a mistake in substitution ')
+                                    print('you have made a mistake in substitution ', stu_ans)
                                     break
                                 if len(list) / row_size > 1 and not multiplied:
-                                    print('you have made a mistake in multiplication and ur error is in ', stu_ans)
+                                    print('you have made a mistake in multiplication when calculating ', matrix_question)
                                     break
                                 if middlesubs:
-                                    print('you have made a mistake in substitution')
+                                    print('you have made a mistake in substitution ', stu_ans)
                                     break
-                            list.clear()
-                            mtrilist.clear()
-                            isfoundrow = true
-                            matri_name.clear()
-                            siz = 0
-                            count = 0
-                            multiplied = False
-                            middlesubs = False
-                            operator = None
-
                     else:
                         subs_matrix = ans_matrix - Matrix(stu_ans_matr1)
                         if subs_matrix == zeros(row_size, col_size):
@@ -365,15 +415,33 @@ class Type2(Logs):
                                 print('your mark for multiplication ', self.scheme['multiplication'])
                                 gotMultipliedMark = True
                                 marks += 1
-
                         else:
-                            list1 = inverseans_matrix.tolist()
-                            list2 = Matrix(stu_ans_matr1).tolist()
-                            list3 = ans_matrix.tolist()
+                            temp = Matrix(stu_ans_matr1)
+                            print(temp)
+                            list1 = np.matrix(inverseans_matrix).tolist()
+                            list2 = np.matrix(temp).tolist()
+                            list3 = np.matrix(ans_matrix).tolist()
                             isShowErrMsg = false
+                            # mulipliedonerow = false
+                            # notmultipliedonerow = false
+                            # num = 0
+                            # check only one row by the constant
+                            # for k in range(ans_matrix.shape[0]):
+                            #     l1 = ans_matrix.row(k)
+                            #     if l1 == stu_ans.row(k):
+                            #         mulipliedonerow = true
+                            #         num += 1
+                            # for k in range(withoutcons_ansmtrix.shape[0]):
+                            #     l1 = withoutcons_ansmtrix.row(k)
+                            #     if l1 == stu_ans.row(k):
+                            #         notmultipliedonerow = true
+                            #         num += 1
+                            # if num == ans_matrix.shape[0]:
+                            #     print('you have forgotten to multiply one or more row by constant ', matrix_question)
+                            #     break
                             for val in withoutcons_ansmtrix:
                                 if val - Matrix(stu_ans_matr1) == zeros(row_size, col_size):
-                                    print('you have forgotten to muliply by the constant and ur error is in ', stu_ans)
+                                    print('you have forgotten to muliply by the constant and ur error is in ', matrix_question)
                                     isShowErrMsg = true
                                     break
                             if isShowErrMsg:
@@ -382,42 +450,35 @@ class Type2(Logs):
                                 l1 = list1.pop()
                                 l2 = list2.pop()
                                 l3 = list3.pop()
-                                for value in range(len(l1)):
-                                    element_val1 = l1.pop()
-                                    element_val2 = l3.pop()
-                                    if element_val1 == l2.pop() and element_val1 != element_val2:
-                                        print('you have done addition instead of subtraction when calculating the element ', element_val)
-                                        isShowErrMsg = true
-                                        break
+                                for val in range(len(list1)):
+                                    for value in range(len(l1)):
+                                        element_val1 = l1.pop()
+                                        element_val2 = l3.pop()
+                                        if element_val1 == l2.pop() and element_val1 != element_val2:
+                                            print('you have done addition instead of subtraction when calculating the element ', element_val2)
+                                            isShowErrMsg = true
+                                            break
                             if isShowErrMsg:
                                 break
                             if len(list) / row_size == 1 and not middlesubs:
                                 if iscontainminus:
-                                    print('you have made a mistake in subtraction in the previous step of  ',
-                                          Matrix(stu_ans_matr1))
+                                    print('you have made a mistake in subtraction in the previous step of  ', Matrix(stu_ans_matr1))
                                     break
                                 else:
-                                    print('you have made a mistake in addition of  previous step of ',
-                                          Matrix(stu_ans_matr1))
+                                    print('you have made a mistake in addition of  previous step of ',Matrix(stu_ans_matr1))
                                     break
-                            # check only one row by the constant
-                            for k in range(ans_matrix.shape[0]):
-                                l1 = ans_matrix.row(k)
-                                if l1 == stu_ans.row(k):
-                                    print('you have multiplied only one row by constant when calculating ', stu_ans)
-                                    isShowErrMsg = true
-                                    break
-                            if isShowErrMsg:
-                                break
 
-                        list.clear()
-                        mtrilist.clear()
-                        isfoundrow = true
-                        matri_name.clear()
-                        siz = 0
-                        count = 0
-                        multiplied = False
-                        middlesubs = False
-                        operator = None
+                if oneStepFinished:
+                    list.clear()
+                    mtrilist.clear()
+                    isfoundrow = true
+                    matri_name.clear()
+                    siz = 0
+                    count = 0
+                    multiplied = False
+                    middlesubs = False
+                    operator = None
                 i += 1
-            print('your final marks is ', marks)
+            print('your final marks is ', marks, 'out of ',self.scheme['totalmarks'])
+        time.sleep(0.1)
+        self.logger.info('Finish answer reading')

@@ -2,9 +2,11 @@ from logger_details import Logs
 from bs4 import BeautifulSoup
 from sympy import *
 import re
+import time
+from threading import Thread
 
 
-class Type1(Logs):
+class Type1(Logs, Thread):
     col_size = None
     row_size = None
 
@@ -33,6 +35,7 @@ class Type1(Logs):
         # check whether middle minus there
         middlesubs = False
         operator = None
+        isfinished = false
 
         self.logger.info('Reading answers')
         with open(self.answer_file) as answer:
@@ -40,6 +43,7 @@ class Type1(Logs):
             marks = 0
             # parse the answer file
             for line in answer:
+                oneStepFinished = false
                 ans_soup = BeautifulSoup(line, "html.parser")
                 if 'mi' in line and 'mtd' not in line and not ispassfenced:
                     temp = ans_soup.text
@@ -78,6 +82,7 @@ class Type1(Logs):
                         row_size = int(siz / col_size)
                         isfoundrow = false
                 if 'mspace' in line:
+                    oneStepFinished = true
                     list = [mtrilist[x:x + col_size] for x in range(0, len(mtrilist), col_size)]
                     for elements in list:
                         for element in elements:
@@ -95,63 +100,55 @@ class Type1(Logs):
                         isTwoMatrixInvolved = true
                     else:
                         matrix_leftside = matri_name.pop().strip()
+                        withoutcons_ans_matrix = self.question[matrix_leftside[1:2]]
                         if re.search(r'\d', matrix_leftside):
                             ans_matrix = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]]
                             subs_matrix = ans_matrix - Matrix(list)
                             if subs_matrix == zeros(row_size, col_size):
-                                #self.logger.info('your step is correct')
-                                if multiplied and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
-                                    gotSubsMark = True
-                                    marks+=1
                                 if not multiplied and not gotMultipliedMark:
                                     print('your mark for multiplication ', self.scheme['multiplication'])
                                     gotMultipliedMark = True
                                     marks += 1
-                                if middlesubs and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
-                                    gotSubsMark = True
-                                    marks += 1
-
                                 else:
-                                    if multiplied and not gotSubsMark:
-                                        print('your mark for substitution ', self.scheme['substitution'])
-                                        gotSubsMark = True
-                                        marks += 1
                                     if len(list) / row_size > 1 and not multiplied and not gotMultipliedMark:
                                         print('your mark for multiplication ', self.scheme['multiplication'])
                                         gotMultipliedMark = True
                                         marks += 1
-                                    if not gotSubsMark and gotMultipliedMark:
-                                        print('your mark for substitution ', self.scheme['substitution'])
-                                        gotSubsMark = True
-                                        marks += 1
-                                    if middlesubs and not gotSubsMark:
-                                        print('your mark for substitution ', self.scheme['substitution'])
-                                        gotSubsMark = True
-                                        marks += 1
-                            list.clear()
-                            mtrilist.clear()
-                            isfoundrow = true
-                            matri_name.clear()
-                            siz = 0
-                            count = 0
-                            multiplied = False
-                            middlesubs = False
-                if list or isTwoMatrixInvolved:
-                    matrix_question = self.question['ques']
-                    twooperandsplitarray = []
-                    if "-" in matrix_question:
-                        iscontainminus = true
-                        # split the left hand side using -
-                        twooperandsplitarray = matrix_question.split('-')
-                    elif "+" in matrix_question:
-                        iscontainplus = true
-                        # split the left hand side using +
-                        twooperandsplitarray = matrix_question.split('+')
-                    if len(twooperandsplitarray) < 1:
-
+                                list.clear()
+                                mtrilist.clear()
+                                isfoundrow = true
+                                matri_name.clear()
+                                siz = 0
+                                count = 0
+                                multiplied = False
+                                middlesubs = False
+                            else:
+                                isShowErrMsg = false
+                                if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
+                                    print('you have forgotten to muliply by the constant ', matrix_leftside[0:1])
+                                    break
+                                if multiplied:
+                                    print('you have made mistake in substitution of ', matrix_leftside[1:2])
+                                    break
+                                if not multiplied:
+                                    print('you have made mistake in multiplication in calculation of ', matrix_leftside)
+                                    break
+                                if middlesubs:
+                                    print('you have made mistake in substitution of ', matrix_leftside[1:2])
+                                    break
+                                # check for multiplication only one row by the constant
+                                for k in range(self.question[matrix_leftside[1:2]].shape[0]):
+                                    l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
+                                    if l1 == Matrix(list).row(k):
+                                        print('you have multiplied only one row by constant when calculating ', matrix_leftside)
+                                        isShowErrMsg = true
+                                        break
+                                if isShowErrMsg:
+                                    break
+                elif list:
+                        matrix_question = self.question['ques']
                         if re.search(r'\d', matrix_question):
+                            withoutcons_ans_matrix = self.question[matrix_question[1:2]]
                             ans_matrix = int(matrix_question[0:1]) * self.question[matrix_question[1:2]]
                             subs_matrix = ans_matrix - Matrix(list)
                             if subs_matrix == zeros(row_size, col_size):
@@ -160,113 +157,42 @@ class Type1(Logs):
                                     print('your mark for multiplication ', self.scheme['multiplication'])
                                     gotMultipliedMark = True
                                     marks += 1
-                    else:
-                        if len(twooperandsplitarray[0]) > 1:
-                            matrix_1 = int(twooperandsplitarray[0][0:1]) * self.question[twooperandsplitarray[0][1:2]]
-                        elif len(twooperandsplitarray[0]) <= 1:
-                            matrix_1 = self.question[twooperandsplitarray[0]]
-                        if len(twooperandsplitarray[1]) > 1:
-                            matrix_2 = int(twooperandsplitarray[1][0:1]) * self.question[twooperandsplitarray[1][1:2]]
-                        elif len(twooperandsplitarray[1]) <= 1:
-                            matrix_2 = self.question[twooperandsplitarray[1]]
+                            else:
+                                isShowErrMsg = false
+                                if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
+                                    print('you have forgotten to muliply by the constant ', matrix_leftside[0:1])
+                                    break
+                                if multiplied:
+                                    print('you have made mistake in substitution of ', matrix_leftside[1:2])
+                                    break
+                                if not multiplied:
+                                    print('you have made mistake in multiplication in calculation of ', matrix_leftside)
+                                    break
+                                if middlesubs:
+                                    print('you have made mistake in substitution of ', matrix_leftside[1:2])
+                                    break
+                                # check for multiplication only one row by the constant
+                                for k in range(self.question[matrix_leftside[1:2]].shape[0]):
+                                    l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
+                                    if l1 == Matrix(list).row(k):
+                                        print('you have multiplied only one row by constant when calculating ',
+                                              matrix_leftside)
+                                        isShowErrMsg = true
+                                        break
+                                if isShowErrMsg:
+                                    break
 
-                        if iscontainplus:
-                            ans_matrix = matrix_1 + matrix_2
-                        elif iscontainminus:
-                            ans_matrix = matrix_1 - matrix_2
-
-                        stu_ans_matr1 = list[0:row_size]
-                    if operator:
-                        stu_ans_matr2 = list[row_size:len(list)]
-                        if str(operator).strip() == '+':
-                            stu_ans = Matrix(stu_ans_matr1) + Matrix(stu_ans_matr2)
-                            subs_matrix = ans_matrix - stu_ans
-                            if subs_matrix == zeros(row_size, col_size):
-                                #self.logger.info('your step is correct')
-                                if multiplied and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
-                                    gotSubsMark = True
-                                    marks += 1
-                                if len(list) / row_size > 1 and not multiplied and not gotMultipliedMark:
-                                    print('your mark for multiplication ', self.scheme['multiplication'])
-                                    gotMultipliedMark = True
-                                    marks += 1
-                                if not gotSubsMark and gotMultipliedMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
-                                    gotSubsMark = True
-                                    marks += 1
-                                if middlesubs and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
-                                    gotSubsMark = True
-                                    marks += 1
-                            list.clear()
-                            mtrilist.clear()
-                            isfoundrow = true
-                            matri_name.clear()
-                            siz = 0
-                            count = 0
-                            multiplied = False
-                            middlesubs = False
-                            operator = None
-
-
-                        elif str(operator).strip() == '-':
-                            stu_ans = Matrix(stu_ans_matr1) - Matrix(stu_ans_matr2)
-                            subs_matrix = ans_matrix - stu_ans
-                            if subs_matrix == zeros(row_size, col_size):
-                               # self.logger.info('your step is correct')
-                                if multiplied and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
-                                    gotSubsMark = True
-                                    marks += 1
-                                if len(list) / row_size > 1 and not multiplied and not gotMultipliedMark:
-                                    print('your mark for multiplication ', self.scheme['multiplication'])
-                                    gotMultipliedMark = True
-                                    marks += 1
-                                if not gotSubsMark and gotMultipliedMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
-                                    gotSubsMark = True
-                                    marks += 1
-                                if middlesubs and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
-                                    gotSubsMark = True
-                                    marks += 1
-                            list.clear()
-                            mtrilist.clear()
-                            isfoundrow = true
-                            matri_name.clear()
-                            siz = 0
-                            count = 0
-                            multiplied = False
-                            middlesubs = False
-                            operator = None
-
-
-                    else:
-                        subs_matrix = ans_matrix - Matrix(stu_ans_matr1)
-                        if subs_matrix == zeros(row_size, col_size):
-                            #self.logger.info('your step is correct')
-                            if len(list) / row_size == 1 and not gotFinalStepMark and not middlesubs:
-                                if iscontainminus:
-                                    print('your mark for subtraction ', self.scheme['subtraction'])
-                                    marks += 1
-                                else:
-                                    print('your mark for addition ', self.scheme['addition'])
-                                    gotFinalStepMark = True
-                                    marks += 1
-                            if not gotMultipliedMark:
-                                print('your mark for multiplication ', self.scheme['multiplication'])
-                                gotMultipliedMark = True
-                                marks += 1
-
-                        list.clear()
-                        mtrilist.clear()
-                        isfoundrow = true
-                        matri_name.clear()
-                        siz = 0
-                        count = 0
-                        multiplied = False
-                        middlesubs = False
-                        operator = None
+                if oneStepFinished:
+                    list.clear()
+                    mtrilist.clear()
+                    isfoundrow = true
+                    matri_name.clear()
+                    siz = 0
+                    count = 0
+                    multiplied = False
+                    middlesubs = False
+                    operator = None
                 i += 1
-            print('your final marks is ', marks)
+            print('your final marks is ', marks, 'out of ',self.scheme['totalmarks'])
+        time.sleep(0.1)
+        self.logger.info('Finish answer reading')

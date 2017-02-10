@@ -9,7 +9,6 @@ class Scheme(Logs):
 
     #marking the student answer
     def readScheme(self):
-        self.logger.info('Reading scheme')
         scheme_dict = {}
         # open the scheme
         with open(self.scheme) as scheme:
@@ -29,7 +28,6 @@ class Scheme(Logs):
                         attribute3 = tag['totalmarks']
                         tot_marks = int(attribute3)
                         scheme_dict['totalmarks'] = tot_marks
-        self.logger.info('Finish scheme reading')
         return scheme_dict
         #no need to close the file with statement will handle that
 

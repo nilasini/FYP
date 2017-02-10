@@ -2,81 +2,66 @@ from logger_details import Logs
 from bs4 import BeautifulSoup
 from sympy import *
 
+
 class Question(Logs):
 
-    x = ''
-    y = ''
     col_size = None
     row_size = None
 
-    def __init__(self,question_file,logger):
+    def __init__(self, question_file, logger):
         self.question_file = question_file
         self.logger = logger
 
-    def readQuestion(self):
-        global x, y
-
-
-        matri_right = []
-        matri_left = []
-        operator_left = []
-        operator_right = []
-        siz = 0
-        lhs_dict = {}
-        r = 0
-        matri_right_var = []
-        matri_left_var = []
-        isOperator = false
-        operator = ''
-        isfoundcol = true
-        isfoundrow = true
+    def readquestion(self):
 
         # open the question file
         filein = open(self.question_file)
-        i = 0
-        j = 0
         self.logger.info('Reading question')
-        # parse the question
+        lhs = self.read(filein)  # read and parse the question for type 4
+        self.logger.info('Finish question reading')
+        return lhs
+
+    def read(self, filein):
+        matri_right = []  # store right hand side values
+        matri_left = []  # store left hand side values
+        lhs_dict = {}  # store question in a dictionary
+        isequalfound = false  # check whether equal sign has find or not
+        matri_right_var = []  # store right hand side variable matrix
+        matri_left_var = []  # store left hand side variable matrix
+        isfoundcol = false  # check whether column size has found
+        isfoundrow = false  # check whether row size has found
+        global col_size, row_size
+        i = 0
         for line in filein:
             soup = BeautifulSoup(line, "html.parser")
-            if 'mi' in line and 'mtd' not in line:
+            if 'mi' in line and 'mtd' not in line:  # check for matrix variables
                 temp = soup.text
-                if r == 0:
+                if not isequalfound:  # check whether variable is in RHS or LHS
                     matri_left_var.insert(i, temp)
-                    # if isOperator:
-                    #     matri_left_var.insert(i + 1, operator)
-                    #     isOperator = false
                 else:
                     matri_right_var.insert(i, temp)
-                    # if isOperator:
-                    #     matri_right_var.insert(i + 1, operator)
-                    #     isOperator = false
             if 'mn' in line:
-                if r == 0:
+                if not isequalfound:  # check for numbers within matrix
                     matri_left.insert(i, soup.text)
                 else:
                     matri_right.insert(i, soup.text)
             if '/mo' in line:
                 if '=' in soup.text:
-                    r = 1
+                    isequalfound = true
                 else:
-                   # if matri_left_var:
-                   #     matri_left_var.insert(i, soup.text)
-                   # else:
-                   if r==0:
+                     if not isequalfound:
                        operator_left = soup.text
                        lhs_dict['operator_left'] = operator_left.strip()
-                   else:
+                     else:
                        operator_right  = soup.text
                        lhs_dict['operator_right'] = operator_right.strip()
-                       # isOperator = true
-            if '/mtr' in line and isfoundcol:
+            if '/mtr' in line and not isfoundcol:
                 if len(matri_left) > 0:
                     Question.col_size = len(matri_left)
-                    isfoundcol = false
+                    isfoundcol = true
                 elif len(matri_right) > 0:
                     Question.col_size = len(matri_right)
-                    isfoundcol = false
+                    isfoundcol = true
             if '/math' in line and len(matri_left_var) > 0:
                 question = matri_left_var.pop().strip()
                 lhs_dict['ques'] = question
@@ -93,14 +78,14 @@ class Question(Logs):
                     lhs_dict['rigth_var'] = temp
 
             if '/mtable' in line:
-                if len(matri_right) and isfoundrow:
-                    siz += len(matri_right)
+                if len(matri_right) and not isfoundrow:
+                    siz = len(matri_right)
                     Question.row_size = int(siz / Question.col_size)
-                    isfoundrow = false
-                elif len(matri_left) and isfoundrow:
-                    siz += len(matri_left)
+                    isfoundrow = true
+                elif len(matri_left) and not isfoundrow:
+                    siz = len(matri_left)
                     Question.row_size = int(siz / Question.col_size)
-                    isfoundrow = false
+                    isfoundrow = true
                 length_l = len(matri_left)
                 lenght_r = len(matri_right)
                 if length_l > 0:
@@ -115,7 +100,6 @@ class Question(Logs):
                 matri_right.clear()
                 matri_left.clear()
             if 'mspace' in line:
-                r = 0
+                isequalfound = false
             i += 1
-        self.logger.info('Finish question reading')
         return lhs_dict

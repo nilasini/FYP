@@ -2,33 +2,34 @@ from logger_details import Logs
 from bs4 import BeautifulSoup
 from sympy import *
 
+
 class Question(Logs):
     col_size = None
     row_size = None
 
-    x = ''
-    y = ''
-
-    def __init__(self,question_file,logger):
+    def __init__(self, question_file, logger):
         self.question_file = question_file
         self.logger = logger
 
-    def readQuestion(self):
-        global col_size, row_size, x, y
-        isfound = True
-        isfoundrow = True
-        mtrilist = []
-        matri_name = []
-        question = ''
-        siz = 0
-        count = 0
-        lhs_dict = {}
-
-        # open the question file
-        filein = open(self.question_file)
-        i = 0
-        j = 0
+    def readquestion(self):
+        global col_size, row_size
+        filein = open(self.question_file)  # open the question file
         self.logger.info('Reading question')
+        lhs = self.read(filein)  # read and parse the question
+        self.logger.info('Finish question reading')
+        return lhs
+
+    def read(self, filein):
+        # parse the question
+        global col_size, row_size
+        i = 0
+        isfoundcol = false  # check whether coloumn size has found
+        isfoundrow = false  # check whether row size has found
+        mtrilist = []  # store right hand side answer
+        matri_name = []  # store left hand side answers
+        question = ''  # store question
+        count = 0  # check whether matrix expression has started
+        lhs_dict = {}  # store question in a dictionary
         # parse the question
         for line in filein:
             soup = BeautifulSoup(line, "html.parser")
@@ -39,15 +40,10 @@ class Question(Logs):
             if 'mn' in line:
                 mtrilist.insert(i, soup.text)
             if 'mtd' in line and 'mi' in line:
-                if j == 0:
-                    x = symbols(soup.text)
-                    j += 1
-                else:
-                    y = symbols(soup.text)
                 mtrilist.insert(i, soup.text)
-            if '/mtr' in line and isfound:
+            if '/mtr' in line and not isfoundcol:
                 col_size = len(mtrilist)
-                isfound = false
+                isfoundcol = true
             if 'mfenced' in line:
                 count = 0
             if '/mo' in line and count > 0:
@@ -58,21 +54,20 @@ class Question(Logs):
                     question += matri_name.pop().strip()
                 lhs_dict['ques'] = question
             if '/mtable' in line:
-                if isfoundrow:
-                    siz += len(mtrilist)
+                if not isfoundrow:
+                    siz = len(mtrilist)
                     row_size = int(siz / col_size)
-                    isfoundrow = false
+                    isfoundrow = true
                 length = len(matri_name)
                 matrix_leftside = ''
                 list = [mtrilist[x:x + col_size] for x in range(0, len(mtrilist), col_size)]
-                M = Matrix(list)
+                m = Matrix(list)
                 if length > 2:
                     for d in range(0, length):
                         matrix_leftside += matri_name.pop().strip()
-                    lhs_dict[matrix_leftside.strip()] = M
+                    lhs_dict[matrix_leftside.strip()] = m
                 else:
-                    lhs_dict[matri_name.pop().strip()] = M
+                    lhs_dict[matri_name.pop().strip()] = m
                 mtrilist.clear()
             i += 1
-        self.logger.info('Finish question reading')
         return lhs_dict
