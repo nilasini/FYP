@@ -200,7 +200,7 @@ class Type2(Logs, Thread):
                                     marks += 1
                             else:
                                 if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
-                                    print('you have forgotten to muliply by the constant and ur mistake is in ', Matrix(list))
+                                    print('you have forgotten to muliply by the constant when finding step ', list)
                                     break
                                 # isShowErrMsg = false
                                 # check only one row by the constant
@@ -232,7 +232,7 @@ class Type2(Logs, Thread):
                                 #           matrix_question)
                                 #     break
                                 else:
-                                    print('you have made a mistake in multiplication and your mistake is in ', Matrix(list))
+                                    print('you have made mistake in multiplication and your mistake is in ', Matrix(list))
                                     break
                     else:
                         withoutcons_ansmtrix = []
@@ -323,13 +323,13 @@ class Type2(Logs, Thread):
                                 #           ' row by constant when calculating ', matrix_leftside)
                                 #     break
                                 if multiplied:
-                                    print('you have made a mistake in substitution and your mistake is ', twooperandsplitarray[0][1:2] + twooperandsplitarray[1][1:2])
+                                    print('you have made mistake in substitution and your mistake is ', twooperandsplitarray[0][1:2] + twooperandsplitarray[1][1:2])
                                     break
                                 if len(list) / row_size > 1 and not multiplied:
-                                    print('you have made a mistake in multiplication when finding ', matrix_question)
+                                    print('you have made mistake in multiplication when finding ', matrix_question)
                                     break
                                 if middlesubs:
-                                    print('you have made a mistake in substitution and ur mistake is in ', stu_ans)
+                                    print('you have made mistake in substitution and ur mistake is in ', stu_ans)
                                     break
                         elif str(operator).strip() == '-':
                             stu_ans = Matrix(stu_ans_matr1) - Matrix(stu_ans_matr2)
@@ -356,7 +356,7 @@ class Type2(Logs, Thread):
                                 isShowErrMsg = false
                                 for val in withoutcons_ansmtrix:
                                     if val - stu_ans == zeros(row_size, col_size):
-                                        print('you have forgotten to muliply by the constant and ur error is in ', matrix_question)
+                                        print('you have forgotten to muliply by the constant when finding step ', stu_ans)
                                         isShowErrMsg =true
                                         break
                                 if isShowErrMsg:
@@ -391,13 +391,13 @@ class Type2(Logs, Thread):
                                 #           matrix_question)
                                 #     break
                                 if multiplied:
-                                    print('you have made a mistake in substitution ', stu_ans)
+                                    print('you have made mistake in substitution ', stu_ans)
                                     break
                                 if len(list) / row_size > 1 and not multiplied:
-                                    print('you have made a mistake in multiplication when calculating ', matrix_question)
+                                    print('you have made mistake in multiplication when calculating ', matrix_question)
                                     break
                                 if middlesubs:
-                                    print('you have made a mistake in substitution ', stu_ans)
+                                    print('you have made mistake in substitution ', stu_ans)
                                     break
                     else:
                         subs_matrix = ans_matrix - Matrix(stu_ans_matr1)
@@ -407,6 +407,7 @@ class Type2(Logs, Thread):
                                 if iscontainminus:
                                     print('your mark for subtraction ', self.scheme['subtraction'])
                                     marks += 1
+                                    gotFinalStepMark = true
                                 else:
                                     print('your mark for addition ', self.scheme['addition'])
                                     gotFinalStepMark = True
@@ -417,7 +418,6 @@ class Type2(Logs, Thread):
                                 marks += 1
                         else:
                             temp = Matrix(stu_ans_matr1)
-                            print(temp)
                             list1 = np.matrix(inverseans_matrix).tolist()
                             list2 = np.matrix(temp).tolist()
                             list3 = np.matrix(ans_matrix).tolist()
@@ -441,7 +441,7 @@ class Type2(Logs, Thread):
                             #     break
                             for val in withoutcons_ansmtrix:
                                 if val - Matrix(stu_ans_matr1) == zeros(row_size, col_size):
-                                    print('you have forgotten to muliply by the constant and ur error is in ', matrix_question)
+                                    print('you have forgotten to muliply by the constant when finding step ', stu_ans_matr1)
                                     isShowErrMsg = true
                                     break
                             if isShowErrMsg:
@@ -455,17 +455,17 @@ class Type2(Logs, Thread):
                                         element_val1 = l1.pop()
                                         element_val2 = l3.pop()
                                         if element_val1 == l2.pop() and element_val1 != element_val2:
-                                            print('you have done addition instead of subtraction when calculating the element ', element_val2)
+                                            print('you have done addition instead of subtraction when finding ', Matrix(stu_ans_matr1))
                                             isShowErrMsg = true
                                             break
                             if isShowErrMsg:
                                 break
                             if len(list) / row_size == 1 and not middlesubs:
                                 if iscontainminus:
-                                    print('you have made a mistake in subtraction in the previous step of  ', Matrix(stu_ans_matr1))
+                                    print('Your step ', Matrix(stu_ans_matr1),' is wrong.', ' you have made mistake in subtraction when finding ', matrix_question)
                                     break
                                 else:
-                                    print('you have made a mistake in addition of  previous step of ',Matrix(stu_ans_matr1))
+                                    print('you have made mistake in addition when finding ', Matrix(stu_ans_matr1))
                                     break
 
                 if oneStepFinished:

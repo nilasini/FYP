@@ -29,12 +29,8 @@ class Type4(Logs):
         ispassfenced = false
         ans_matrix = None
         rightside_constant = None
-        # check whether the step is already multiplied by the system if 2 is there system will multiply and do the rest
-        multiplied = False
-        gotMultipliedMark = False
+        gotDivisionMark = False
         gotSubsMark = False
-        gotFinalStepMark = False
-        # check whether middle minus there
         middlesubs = False
         operator = None
 
@@ -154,18 +150,24 @@ class Type4(Logs):
                         ans_matrix = int(matrix_leftside[0:1]) * res
                         if not operator:
                             subs_matrix = ans_matrix - Matrix(list)
-                            if subs_matrix == zeros(row_size, col_size):
-                                print('your mark for substitution ')
+                            if subs_matrix == zeros(row_size, col_size) and not gotSubsMark:
+                                print('your mark for subtraction ', self.scheme['subtraction'])
                                 marks += 1
+                                gotSubsMark = true
                     else:
                         subs_matrix = res - Matrix(list)
                         if subs_matrix == zeros(row_size, col_size):
-                            print('your mark for substitution ')
-                            marks += 1
-                elif list:
+                            if gotSubsMark and not gotDivisionMark:
+                                print('your mark for division is ', self.scheme['division'])
+                                marks += 1
+                                gotDivisionMark = true
+                            elif not gotSubsMark and not gotDivisionMark:
+                                print('your mark is ', self.scheme['totalmarks'])
+
+                elif list :
                     subs_matrix = res - Matrix(list)
-                    if subs_matrix == zeros(row_size, col_size):
-                        print('your mark for substitution ')
+                    if subs_matrix == zeros(row_size, col_size) and not gotSubsMark and not gotDivisionMark:
+                        print('your mark is ', self.scheme['totalmarks'])
                         marks += 1
                 if oneStepFinished:
                     list.clear()
@@ -178,10 +180,9 @@ class Type4(Logs):
                     multiplied = False
                     middlesubs = False
                 i += 1
-            print('your final marks is ', marks)
+            print('your final marks is ', marks, 'out of ', self.scheme['totalmarks'])
         time.sleep(0.1)
         self.logger.info('Finish answer reading')
-
 
 
 
