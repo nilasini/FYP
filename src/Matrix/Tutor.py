@@ -12,14 +12,14 @@ from threading import Thread
 class Tutor(Thread):
     logs = Logs()
     # initiate the Question
-    question = Question('./Files/questions/Type2/set1/sampleQ1.html', logs.logger)
+    question = Question('./Files/questions/Type3/set1/sampleQ1.html', logs.logger)
     # initiate the Scheme
-    scheme = Scheme('./Files/schemes/Type2/set1/sampleQ1_S.html', logs.logger)
+    scheme = Scheme('./Files/schemes/Type3/set1/sampleQ1_S.html', logs.logger)
     # parse the scheme
     scheme_parsed = scheme.readScheme()
     time.sleep(0.2)
     # read the answer
-    answer = Answer(question, scheme_parsed, './Files/answers/Type2/set1/sampleA1_1.html', logs.logger)
+    answer = Answer(question, scheme_parsed, './Files/answers/Type3/set1/sampleA1_1.html', logs.logger)
     # mark the answer file
     answer.grading()
 
