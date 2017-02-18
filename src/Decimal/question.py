@@ -9,7 +9,7 @@ class Question(Logs):
         self.question_file = question_file
         self.logger = logger
 
-    def readQuestion(self):
+    def readquestion(self):
         ques_list = Queue(maxsize=0)
         count = 0
         question = ''
