@@ -123,7 +123,21 @@ class Type1(Logs, Thread):
                                 multiplied = False
                                 middlesubs = False
                             else:
-                                isShowErrMsg = false
+                                numofcrctmuliplication = 0
+                                # check for multiplication only first row by the constant
+                                for k in range(self.question[matrix_leftside[1:2]].shape[0]):
+                                    if k == 0:
+                                        l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
+                                    else:
+                                        l2 = self.question[matrix_leftside[1:2]].row(k)
+                                    if k == 0 and l1 == Matrix(list).row(0):
+                                        numofcrctmuliplication += 1
+                                    elif k != 0 and l2 == Matrix(list).row(k):
+                                        numofcrctmuliplication += 1
+                                if numofcrctmuliplication == self.question[matrix_leftside[1:2]].shape[0]:
+                                    print('you have multiplied only first row by constant when calculating ',
+                                          matrix_leftside)
+                                    break
                                 if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
                                     print('you have forgotten to muliply by the constant ', matrix_leftside[0:1])
                                     break
@@ -135,15 +149,6 @@ class Type1(Logs, Thread):
                                     break
                                 if middlesubs:
                                     print('you have made mistake in substitution of ', matrix_leftside[1:2])
-                                    break
-                                # check for multiplication only one row by the constant
-                                for k in range(self.question[matrix_leftside[1:2]].shape[0]):
-                                    l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
-                                    if l1 == Matrix(list).row(k):
-                                        print('you have multiplied only one row by constant when calculating ', matrix_leftside)
-                                        isShowErrMsg = true
-                                        break
-                                if isShowErrMsg:
                                     break
                 elif list:
                         matrix_question = self.question['ques']
@@ -158,28 +163,32 @@ class Type1(Logs, Thread):
                                     gotMultipliedMark = True
                                     marks += 1
                             else:
-                                isShowErrMsg = false
+                                numofcrctmuliplication = 0
+                                # check for multiplication only first row by the constant
+                                for k in range(self.question[matrix_question[1:2]].shape[0]):
+                                    if k == 0:
+                                        l1 = int(matrix_question[0:1]) * self.question[matrix_question[1:2]].row(k)
+                                    else:
+                                        l2 = self.question[matrix_question[1:2]].row(k)
+                                    if k == 0 and l1 == Matrix(list).row(0):
+                                        numofcrctmuliplication += 1
+                                    elif k != 0 and l2 == Matrix(list).row(k):
+                                        numofcrctmuliplication += 1
+                                if numofcrctmuliplication == self.question[matrix_question[1:2]].shape[0]:
+                                    print('you have multiplied only first row by constant when calculating ',
+                                          matrix_question)
+                                    break
                                 if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
-                                    print('you have forgotten to muliply by the constant ', matrix_leftside[0:1])
+                                    print('you have forgotten to muliply by the constant ', matrix_question[0:1])
                                     break
                                 if multiplied:
-                                    print('you have made mistake in substitution of ', matrix_leftside[1:2])
+                                    print('you have made mistake in substitution of ', matrix_question[1:2])
                                     break
                                 if not multiplied:
-                                    print('you have made mistake in multiplication in calculation of ', matrix_leftside)
+                                    print('you have made mistake in multiplication in calculation of ', matrix_question)
                                     break
                                 if middlesubs:
-                                    print('you have made mistake in substitution of ', matrix_leftside[1:2])
-                                    break
-                                # check for multiplication only one row by the constant
-                                for k in range(self.question[matrix_leftside[1:2]].shape[0]):
-                                    l1 = int(matrix_leftside[0:1]) * self.question[matrix_leftside[1:2]].row(k)
-                                    if l1 == Matrix(list).row(k):
-                                        print('you have multiplied only one row by constant when calculating ',
-                                              matrix_leftside)
-                                        isShowErrMsg = true
-                                        break
-                                if isShowErrMsg:
+                                    print('you have made mistake in substitution of ', matrix_question[1:2])
                                     break
 
                 if oneStepFinished:

@@ -39,41 +39,6 @@ class Type4(Logs):
         with open(self.answer_file) as answer:
             marks = 0
             isContainVariable = False
-            # parse the answer file
-            # size = len(self.question['left_var'])
-            # if size > 1:
-            #     var1 = self.question['left_var'].pop().strip()
-            #     var2 = self.question['left_var'].pop().strip()
-            #     Ques_var = self.question['ques']
-            #     Ques_var = MatrixSymbol('Ques_var', self.row_size, self.col_size)
-            #     if self.question['ques'] not in var1:
-            #         variab1 = var1
-            #         variab2 = var2
-            #     else:
-            #         variab1 = var2
-            #         variab2 = var1
-            #     value = None
-            #     if self.question['operator_left'] == '+':
-            #         if len(variab2) > 1:
-            #             value = variab2[0:1]
-            #         variab1 = MatrixSymbol('variab1', self.row_size, self.col_size)
-            #         if value:
-            #             result = (int(value)*Matrix(Ques_var)+Matrix(variab1) - self.question['right']).xreplace({variab1:Ques_var})
-            #         else:
-            #             result = (Matrix(Ques_var) + Matrix(variab1) - self.question['right']).xreplace({variab1: Ques_var})
-            #         res = solve(result, Matrix(Ques_var))
-            #         tt = Matrix(Ques_var).xreplace(res)
-            # #     print('reskkkkkk', res)
-            # #     elif self.question['operator_left'] == '-':
-            # #         if re.search(r'\d', variab):
-            # #             Ques_var = self.question['ques']
-            # #             Ques_var = MatrixSymbol('Ques_var', self.row_size, self.col_size)
-            # #             ans_matrix = int(variab[0:1]) * Matrix(Ques_var)
-            # #         result = solve(ans_matrix - self.question['left'] - self.question['right'], Matrix(Ques_var))
-            # #         res = Matrix(Ques_var).xreplace(result)
-            # #         print('reskkkkkk', res)
-            # #     print()
-            # else:
             #rearrange the question
             var=self.question['left_var'].pop().strip()
             if self.question['operator_left'] == '+':

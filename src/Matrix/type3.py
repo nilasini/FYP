@@ -182,6 +182,21 @@ class Type3(Logs, Thread):
                                     gotMultipliedMark = True
                                     marks += 1
                             else:
+                                numofcrctmuliplication = 0
+                                # check for multiplication only first row by the constant
+                                for k in range(self.question[matrix_question[1:2]].shape[0]):
+                                    if k == 0:
+                                        l1 = int(matrix_question[0:1]) * self.question[matrix_question[1:2]].row(k)
+                                    else:
+                                        l2 = self.question[matrix_question[1:2]].row(k)
+                                    if k == 0 and l1 == Matrix(list).row(0):
+                                        numofcrctmuliplication += 1
+                                    elif k != 0 and l2 == Matrix(list).row(k):
+                                        numofcrctmuliplication += 1
+                                if numofcrctmuliplication == self.question[matrix_question[1:2]].shape[0]:
+                                    print('you have multiplied only first row by constant when calculating ',
+                                          matrix_question)
+                                    break
                                 if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
                                     print('you have forgotten to muliply by the constant ', matrix_leftside[0:1])
                                     break
@@ -210,6 +225,21 @@ class Type3(Logs, Thread):
                                     print('your mark for find subtraction is ', self.scheme['subtraction'])
                                     marks += 1
                             else:
+                                numofcrctmuliplication = 0
+                                # check for multiplication only first row by the constant
+                                for k in range(self.question[matrix_question[1:2]].shape[0]):
+                                    if k == 0:
+                                        l1 = int(matrix_question[0:1]) * self.question[matrix_question[1:2]].row(k)
+                                    else:
+                                        l2 = self.question[matrix_question[1:2]].row(k)
+                                    if k == 0 and l1 == Matrix(list).row(0):
+                                        numofcrctmuliplication += 1
+                                    elif k != 0 and l2 == Matrix(list).row(k):
+                                        numofcrctmuliplication += 1
+                                if numofcrctmuliplication == self.question[matrix_question[1:2]].shape[0]:
+                                    print('you have multiplied only first row by constant when calculating ',
+                                          matrix_question)
+                                    break
                                 if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
                                     print('you have forgotten to muliply by the constant ', matrix_leftside[0:1])
                                     break
