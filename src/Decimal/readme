@@ -1,1 +1,3 @@
-I have used 'isclose' method to check the nearness of values. For example system need to know 0.01 and 0.0100001 are equal.
+Note:- File paths for question, scheme and answer should be given in Tutor class
+
+1)To execute run Tutor class by right click Tutor->run

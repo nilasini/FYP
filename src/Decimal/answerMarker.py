@@ -112,8 +112,6 @@ class Answer(Logs):
                     print("your answer is wrong")
 
             elif '-' in self.question and ans:
-                sym_afterdeci1 = 0
-                sym_afterdeci2 = 0
                 self.logger.info('Type : decimal subtraction')
                 isshowerr = false
                 splitted_arr = self.question.split('-')
@@ -136,25 +134,8 @@ class Answer(Logs):
                 # check inverse operation
                 inverse_ans = float(splitted_arr[0]) + float(splitted_arr[1])
 
-                # check whether added decimal part separately from the whole number part
-                # if '.' in splitted_arr[0]:
-                #     sym_afterdeci1 = len(((splitted_arr[0]).split('.'))[1])  # count number of decimal after decimal point
-                # if '.' in splitted_arr[1]:
-                #     sym_afterdeci2 = len(((splitted_arr[1]).split('.'))[1])  # count number of decimal after decimal point
-                # diff = abs(sym_afterdeci1 - sym_afterdeci2)  # check which number has more decimal
-                # separate_ans1 = int(((splitted_arr[0]).split('.'))[0]) - int(((splitted_arr[1]).split('.'))[0])
-                # if sym_afterdeci1 > sym_afterdeci2:
-                #     separate_ans2 = int(((splitted_arr[1]).split('.'))[1]) * (10 ** diff) - int(
-                #         ((splitted_arr[0]).split('.'))[1])  # make two numbers equal length
-                # else:
-                #     separate_ans2 = int(((splitted_arr[0]).split('.'))[1]) * (10 ** diff) - int(
-                #         ((splitted_arr[1]).split('.'))[1])  # make two numbers equal length
-
                 # check whether decimal point has been misplaced
                 # reverse the string and find the position of a decimal point
-                sym_decimalpoint = (str(sym_ans))[::-1].find('.')
-                stu_decimalpoint = (str(stu_ans))[::-1].find('.')
-                # difference = abs((str(sym_ans))[::-1].find('.') - (str(stu_ans))[::-1].find('.'))
                 if (str(sym_ans))[::-1].find('.') > (str(stu_ans))[::-1].find('.'):
                     for k in range(1, (str(sym_ans))[::-1].find('.') + 1):
                         if float(sym_ans) > float(stu_ans):
@@ -175,15 +156,6 @@ class Answer(Logs):
                             if isclose(float(sym_ans) * (10 ** k), float(stu_ans)):
                                 isshowerr = true
                                 break
-                # for k in range(1, difference + 1):
-                #     if stu_decimalpoint > sym_decimalpoint:
-                #         if isclose(float(stu_ans) * (10 ** k), sym_ans):
-                #             isshowerr = true
-                #             break
-                #     else:
-                #         if isclose(float(sym_ans) * (10 ** k), stu_ans):
-                #             isshowerr = true
-                #             break
 
                 if isclose(float(ans), float(sym_ans)):
                     temp_mark = int(self.scheme['subtraction'])
@@ -191,9 +163,7 @@ class Answer(Logs):
                     marks += temp_mark
                 elif isclose(float(ans), inverse_ans):
                     print('your answer is wrong. you have done subtraction instead of addition')
-                # elif (float(str(separate_ans1) + '.' + str(separate_ans2))) == float(ans):
-                #     print(' your answer is wrong. you have added decimal part separately from the whole number part')
-                #     exit()
+
                 elif isshowerr:
                     print("your answer is wrong, you have misplaced the decimal point")
                 else:
@@ -232,18 +202,10 @@ class Answer(Logs):
                     marks += temp_mark
                 elif isclose(float(ans), inverse_ans):
                     print('your answer is wrong. you have done addition instead of multiplication')
-                # elif (float(str(separate_ans1) + '.' + str(separate_ans2))) == float(ans):
-                #     print(' your answer is wrong. you have added decimal part separately from the whole number part')
-                #     exit()
                 elif isshowerr:
                     print("your answer is wrong, you have misplaced the decimal point")
                 else:
                     print("your answer is wrong")
-                # sym_ans = float(splitted_arr[0]) * float(splitted_arr[1])
-                # if isclose(float(ans), sym_ans):
-                #     temp_mark = int(self.scheme['multiplication'])
-                #     print('your answer is correct. your mark for multiplication is ', temp_mark)
-                #     marks += temp_mark
 
 
 
