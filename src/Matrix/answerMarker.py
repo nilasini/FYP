@@ -19,7 +19,9 @@ class Answer(Logs):
 
     # call each matrix type according to the matching regex.
     def grading(self):
-        if re.search("[0-9]?[A-Z]?[-][0-9]?[A-Z]", self.question['ques']):  # check for 2A-B type question
+        if re.search("[a-z]", 'xy'):
+            print(' hi nila')
+        if re.search("[0-9]?[A-Z][-|+][0-9]?[A-Z]", self.question['ques']):  # check for 2A-B type question
             self.logger.info('Type : Matrix addition/subtraction')
             type2 = Type2(self.question, self.scheme, self.answer_file, self.logger)
             type2.markAns()
@@ -35,6 +37,7 @@ class Answer(Logs):
             self.logger.info('Type : finding unknown matrix')
             type4 = Type4(self.question, self.quest.col_size, self.quest.row_size, self.scheme, self.answer_file, self.logger)
             type4.markAns()
+
 
 
 

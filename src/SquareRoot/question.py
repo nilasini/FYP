@@ -9,7 +9,7 @@ class Question(Logs):
         self.question_file = question_file
         self.logger = logger
 
-    def readQuestion(self):
+    def readquestion(self):
         ques_list = Queue(maxsize=0)
         count = 0
         question = ''
@@ -22,9 +22,9 @@ class Question(Logs):
         # parse the question
         for line in filein:
             soup = BeautifulSoup(line, "html.parser")
-            if 'msqrt' in line and '/msqrt' not in line:
-                issqrt = true
-            if 'mn' in line:
+            # if 'msqrt' in line and '/msqrt' not in line:
+            # #     issqrt = true
+            # if 'mn' in line:
 
             if 'mn' in line and issqrt:
                 sqrt_list.insert(0, int(soup.text.strip()))

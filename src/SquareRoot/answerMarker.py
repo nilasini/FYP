@@ -10,7 +10,7 @@ class Answer(Logs):
         self.scheme = scheme
         self.answer_file = answer_file
         self.logger = logger
-        self.question = ques.readQuestion()
+        self.question = ques.read_question()
         self.quest = ques
 
     def markAns(self):
