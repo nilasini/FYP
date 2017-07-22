@@ -6,6 +6,7 @@ import re
 import time
 from threading import Thread
 import operator
+import json
 
 
 class Type4(Logs):
@@ -33,6 +34,11 @@ class Type4(Logs):
         gotSubsMark = False
         middlesubs = False
         operator = None
+        error_Identification = []
+        concept = []
+        step = 0
+        errStep = 0
+        dataArray = []
 
         self.logger.info('Reading answers')
         # open the answer file
@@ -116,23 +122,29 @@ class Type4(Logs):
                         if not operator:
                             subs_matrix = ans_matrix - Matrix(list)
                             if subs_matrix == zeros(row_size, col_size) and not gotSubsMark:
-                                print('your mark for subtraction ', self.scheme['subtraction'])
+                                # print('your mark for subtraction ', self.scheme['subtraction'])
+                                dataArray.append({"concept": "subtraction", "details": "Correct",
+                                                  "marksAwarded": self.scheme['subtraction'], "step": step,
+                                                  "totalMarks": self.scheme['subtraction']})
                                 marks += 1
                                 gotSubsMark = true
                     else:
                         subs_matrix = res - Matrix(list)
                         if subs_matrix == zeros(row_size, col_size):
                             if gotSubsMark and not gotDivisionMark:
-                                print('your mark for division is ', self.scheme['division'])
+                                # print('your mark for division is ', self.scheme['division'])
+                                dataArray.append({"concept": "division", "details": "Correct",
+                                                  "marksAwarded": self.scheme['division'], "step": step,
+                                                  "totalMarks": self.scheme['division']})
                                 marks += 1
                                 gotDivisionMark = true
-                            elif not gotSubsMark and not gotDivisionMark:
-                                print('your mark is ', self.scheme['totalmarks'])
+                            # elif not gotSubsMark and not gotDivisionMark:
+                            #     print('your mark is ', self.scheme['totalmarks'])
 
                 elif list :
                     subs_matrix = res - Matrix(list)
                     if subs_matrix == zeros(row_size, col_size) and not gotSubsMark and not gotDivisionMark:
-                        print('your mark is ', self.scheme['totalmarks'])
+                        # print('your mark is ', self.scheme['totalmarks'])
                         marks += 1
                 if oneStepFinished:
                     list.clear()
@@ -145,7 +157,15 @@ class Type4(Logs):
                     multiplied = False
                     middlesubs = False
                 i += 1
-            print('your final marks is ', marks, 'out of ', self.scheme['totalmarks'])
+            if not dataArray:
+                data = {"studentTotal": marks, "errStep":errStep, "maxMarks":self.scheme['totalmarks'], "error_identification":error_Identification}
+            elif not error_Identification:
+                data = {"studentTotal": marks, "maxMarks":self.scheme['totalmarks'], "concepts":dataArray}
+            else:
+                data = {"studentTotal": marks, "errStep":errStep, "maxMarks":self.scheme['totalmarks'], "concepts":dataArray, "error_identification":error_Identification}
+
+            print(json.dumps(data))
+            # print('your final marks is ', marks, 'out of ', self.scheme['totalmarks'])
         time.sleep(0.1)
         self.logger.info('Finish answer reading')
 

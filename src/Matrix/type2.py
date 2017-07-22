@@ -5,7 +5,7 @@ import re
 import time
 import numpy as np
 from threading import Thread
-
+import json
 
 class Type2(Logs, Thread):
     col_size = None
@@ -22,6 +22,12 @@ class Type2(Logs, Thread):
         isfoundrow = true
         mtrilist = []
         matri_name = []
+        error_Identification = []
+        concept = []
+        step = 0
+        errStep = 0
+        dataArray = []
+
         list = []
         siz = 0
         count = 0
@@ -82,6 +88,7 @@ class Type2(Logs, Thread):
                         row_size = int(siz / col_size)
                         isfoundrow = false
                 if 'mspace' in line:
+                    step += 1
                     oneStepFinished = true
                     list = [mtrilist[x:x + col_size] for x in range(0, len(mtrilist), col_size)]
                     for elements in list:
@@ -107,15 +114,28 @@ class Type2(Logs, Thread):
                             if subs_matrix == zeros(row_size, col_size):
                                 # self.logger.info('your step is correct')
                                 if multiplied and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
+                                    # print('your mark for substitution ', self.scheme['substitution'])
+                                    concept.append('your mark for substitution ' + str(self.scheme['substitution']))
+                                    dataArray.append({"concept": "substitution", "details": "Correct",
+                                                      "marksAwarded": self.scheme['substitution'], "step": step,
+                                                      "totalMarks": self.scheme['substitution']}
+                                                     )
                                     gotSubsMark = True
                                     marks += 1
                                 if not multiplied and not gotMultipliedMark:
-                                    print('your mark for multiplication ', self.scheme['multiplication'])
+                                    # print('your mark for multiplication ', self.scheme['multiplication'])
+                                    concept.append('your mark for multiplication ' + str(self.scheme['multiplication']))
+                                    dataArray.append({"concept": "multiplication", "details": "Correct",
+                                                      "marksAwarded": self.scheme['multiplication'], "step": step,
+                                                      "totalMarks": self.scheme['multiplication']})
                                     gotMultipliedMark = True
                                     marks += 1
                                 if middlesubs and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
+                                    # print('your mark for substitution ', self.scheme['substitution'])
+                                    concept.append('your mark for substitution '+ str(self.scheme['substitution']))
+                                    dataArray.append({"concept": "substitution", "details": "Correct",
+                                                      "marksAwarded": self.scheme['substitution'], "step": step,
+                                                      "totalMarks": self.scheme['substitution']})
                                     gotSubsMark = True
                                     marks += 1
                                 else:
@@ -124,11 +144,19 @@ class Type2(Logs, Thread):
                                     #     gotSubsMark = True
                                     #     marks += 1
                                     if len(list) / row_size > 1 and not multiplied and not gotMultipliedMark:
-                                        print('your mark for multiplication ', self.scheme['multiplication'])
+                                        # print('your mark for multiplication ', self.scheme['multiplication'])
+                                        concept.append ('your mark for multiplication '+ str(self.scheme['multiplication']))
+                                        dataArray.append({"concept": "multiplication", "details": "Correct",
+                                                      "marksAwarded": self.scheme['multiplication'], "step": step,
+                                                      "totalMarks": self.scheme['multiplication']})
                                         gotMultipliedMark = True
                                         marks += 1
                                     if not gotSubsMark and gotMultipliedMark:
-                                        print('your mark for substitution ', self.scheme['substitution'])
+                                        # print('your mark for substitution ', self.scheme['substitution'])
+                                        concept.append('your mark for substitution '+str(self.scheme['substitution']))
+                                        dataArray.append({"concept": "substitution", "details": "Correct",
+                                                          "marksAwarded": self.scheme['substitution'], "step": step,
+                                                          "totalMarks": self.scheme['substitution']})
                                         gotSubsMark = True
                                         marks += 1
                                     # if middlesubs and not gotSubsMark:
@@ -137,16 +165,24 @@ class Type2(Logs, Thread):
                                     #     marks += 1
                             else:
                                 if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
-                                    print('you have forgotten to muliply by the constant ', matrix_leftside[0:1])
+                                    # print('you have forgotten to muliply by the constant ', matrix_leftside[0:1])
+                                    errStep = step
+                                    error_Identification.append ('you have forgotten to muliply by the constant '+ str(matrix_leftside[0:1]))
                                     break
                                 if multiplied:
-                                    print('you have made mistake in substitution of ', matrix_leftside[1:2])
+                                    # print('you have made mistake in substitution of ', matrix_leftside[1:2])
+                                    errStep = step
+                                    error_Identification.append('you have made mistake in substitution of '+ str(matrix_leftside[1:2]))
                                     break
                                 if not multiplied:
-                                    print('you have made mistake in multiplication in calculation of ', matrix_leftside)
+                                    # print('you have made mistake in multiplication in calculation of ', matrix_leftside)
+                                    errStep = step
+                                    error_Identification.append('you have made mistake in multiplication in calculation of '+str(matrix_leftside))
                                     break
                                 if middlesubs:
-                                    print('you have made mistake in substitution of ', matrix_leftside[1:2])
+                                    # print('you have made mistake in substitution of ', matrix_leftside[1:2])
+                                    errStep = step
+                                    error_Identification.append('you have made mistake in substitution of '+str(matrix_leftside[1:2]))
                                     break
                                 isShowErrMsg = false
                                 # check only one row by the constant
@@ -195,12 +231,18 @@ class Type2(Logs, Thread):
                             if subs_matrix == zeros(row_size, col_size):
                                 # self.logger.info('your step is correct')
                                 if not multiplied and not gotMultipliedMark:
-                                    print('your mark for multiplication ', self.scheme['multiplication'])
+                                    # print('your mark for multiplication ', self.scheme['multiplication'])
+                                    concept.append('your mark for multiplication '+ str(self.scheme['multiplication']))
+                                    dataArray.append({"concept": "multiplication", "details": "Correct",
+                                                      "marksAwarded": self.scheme['multiplication'], "step": step,
+                                                      "totalMarks": self.scheme['multiplication']})
                                     gotMultipliedMark = True
                                     marks += 1
                             else:
                                 if (withoutcons_ans_matrix - Matrix(list)) == zeros(row_size, col_size):
-                                    print('you have forgotten to muliply by the constant when finding step ', Matrix(list))
+                                    # print('you have forgotten to muliply by the constant when finding step ', Matrix(list))
+                                    errStep = step
+                                    error_Identification.append('you have forgotten to muliply by the constant when finding step '+ str(Matrix(list)))
                                     break
                                 numofcrctmuliplication = 0
                                 # check for multiplication only first row by the constant
@@ -216,11 +258,15 @@ class Type2(Logs, Thread):
                                         numofcrctmuliplication += 1
 
                                 if numofcrctmuliplication == ans_matrix.shape[0]:
-                                    print('your step ', Matrix(stu_ans),
-                                          ' is wrong. you have multiplied only first row by constant')
+                                    # print('your step ', Matrix(stu_ans),
+                                    #       ' is wrong. you have multiplied only first row by constant')
+                                    errStep = step
+                                    error_Identification.append('your step '+str(Matrix(stu_ans))+' is wrong. you have multiplied only first row by constant')
                                     break
                                 else:
-                                    print('you have made mistake in multiplication and your mistake is in ', Matrix(list))
+                                    # print('you have made mistake in multiplication and your mistake is in ', Matrix(list))
+                                    errStep = step
+                                    error_Identification.append('you have made mistake in multiplication and your mistake is in '+ str(Matrix(list)))
                                     break
                     else:
                         withoutcons_ansmtrix = []
@@ -262,19 +308,35 @@ class Type2(Logs, Thread):
                             if subs_matrix == zeros(row_size, col_size):
                                 # self.logger.info('your step is correct')
                                 if multiplied and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
+                                    # print('your mark for substitution ', self.scheme['substitution'])
+                                    concept.append('your mark for substitution '+str(self.scheme['substitution']))
+                                    dataArray.append({"concept": "substitution", "details": "Correct",
+                                                      "marksAwarded": self.scheme['substitution'], "step": step,
+                                                      "totalMarks": self.scheme['substitution']})
                                     gotSubsMark = True
                                     marks += 1
                                 if len(list) / row_size > 1 and not multiplied and not gotMultipliedMark:
-                                    print('your mark for multiplication ', self.scheme['multiplication'])
+                                    # print('your mark for multiplication ', self.scheme['multiplication'])
+                                    concept.append('your mark for multiplication '+ str(self.scheme['multiplication']))
+                                    dataArray.append({"concept": "multiplication", "details": "Correct",
+                                                      "marksAwarded": self.scheme['multiplication'], "step": step,
+                                                      "totalMarks": self.scheme['multiplication']})
                                     gotMultipliedMark = True
                                     marks += 1
                                 if not gotSubsMark and gotMultipliedMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
+                                    # print('your mark for substitution ', self.scheme['substitution'])
+                                    concept.append('your mark for substitution '+ str(self.scheme['substitution']))
+                                    dataArray.append({"concept": "substitution", "details": "Correct",
+                                                      "marksAwarded": self.scheme['substitution'], "step": step,
+                                                      "totalMarks": self.scheme['substitution']})
                                     gotSubsMark = True
                                     marks += 1
                                 if middlesubs and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
+                                    # print('your mark for substitution ', self.scheme['substitution'])
+                                    concept.append('your mark for substitution '+ str(self.scheme['substitution']))
+                                    dataArray.append({"concept": "substitution", "details": "Correct",
+                                                      "marksAwarded": self.scheme['substitution'], "step": step,
+                                                      "totalMarks": self.scheme['substitution']})
                                     gotSubsMark = True
                                     marks += 1
                             else:
@@ -292,25 +354,35 @@ class Type2(Logs, Thread):
                                         numofcrctmuliplication += 1
 
                                 if numofcrctmuliplication == ans_matrix.shape[0]:
-                                    print('your step ', Matrix(stu_ans),
-                                          ' is wrong. you have multiplied only first row by constant')
+                                    # print('your step ', Matrix(stu_ans),
+                                    #       ' is wrong. you have multiplied only first row by constant')
+                                    errStep = step
+                                    error_Identification.append('your step '+ str(Matrix(stu_ans))+ ' is wrong. you have multiplied only first row by constant')
                                     break
                                 isShowErrMsg = false
                                 for val in range(len(withoutcons_ansmtrix)):
                                     if val - stu_ans == zeros(row_size, col_size):
-                                        print('you have forgotten to muliply by the constant in ', stu_ans)
+                                        # print('you have forgotten to muliply by the constant in ', stu_ans)
+                                        errStep = step
+                                        error_Identification.append('you have forgotten to muliply by the constant in '+ str(stu_ans))
                                         isShowErrMsg =true
                                         break
                                 if isShowErrMsg:
                                     break
                                 if multiplied:
-                                    print('you have made mistake in substitution and your mistake is ', twooperandsplitarray[0][1:2] + twooperandsplitarray[1][1:2])
+                                    # print('you have made mistake in substitution and your mistake is ', twooperandsplitarray[0][1:2] + twooperandsplitarray[1][1:2])
+                                    errStep = step
+                                    error_Identification.append('you have made mistake in substitution and your mistake is ' +str(twooperandsplitarray[0][1:2]) + str(twooperandsplitarray[1][1:2]))
                                     break
                                 if len(list) / row_size > 1 and not multiplied:
-                                    print('you have made mistake in multiplication when finding ', matrix_question)
+                                    # print('you have made mistake in multiplication when finding ', matrix_question)
+                                    errStep = step
+                                    error_Identification.append('you have made mistake in multiplication when finding '+ str(matrix_question))
                                     break
                                 if middlesubs:
-                                    print('you have made mistake in substitution and ur mistake is in ', stu_ans)
+                                    # print('you have made mistake in substitution and ur mistake is in ', stu_ans)
+                                    errStep = step
+                                    error_Identification.append('you have made mistake in substitution and ur mistake is in '+ str(stu_ans))
                                     break
                         elif str(operator).strip() == '-':
                             stu_ans = Matrix(stu_ans_matr1) - Matrix(stu_ans_matr2)
@@ -318,19 +390,35 @@ class Type2(Logs, Thread):
                             if subs_matrix == zeros(row_size, col_size):
                                 # self.logger.info('your step is correct')
                                 if multiplied and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
+                                    # print('your mark for substitution ', self.scheme['substitution'])
+                                    concept.append('your mark for substitution '+ str(self.scheme['substitution']))
+                                    dataArray.append({"concept": "substitution", "details": "Correct",
+                                                      "marksAwarded": self.scheme['substitution'], "step": step,
+                                                      "totalMarks": self.scheme['substitution']})
                                     gotSubsMark = True
                                     marks += 1
                                 if len(list) / row_size > 1 and not multiplied and not gotMultipliedMark:
-                                    print('your mark for multiplication ', self.scheme['multiplication'])
+                                    # print('your mark for multiplication ', self.scheme['multiplication'])
+                                    concept.append('your mark for multiplication '+ str(self.scheme['multiplication']))
+                                    dataArray.append({"concept": "multiplication", "details": "Correct",
+                                                      "marksAwarded": self.scheme['multiplication'], "step": step,
+                                                      "totalMarks": self.scheme['multiplication']})
                                     gotMultipliedMark = True
                                     marks += 1
                                 if not gotSubsMark and gotMultipliedMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
+                                    # print('your mark for substitution ', self.scheme['substitution'])
+                                    concept.append('your mark for substitution '+ str(self.scheme['substitution']))
+                                    dataArray.append({"concept": "substitution", "details": "Correct",
+                                                      "marksAwarded": self.scheme['substitution'], "step": step,
+                                                      "totalMarks": self.scheme['substitution']})
                                     gotSubsMark = True
                                     marks += 1
                                 if middlesubs and not gotSubsMark:
-                                    print('your mark for substitution ', self.scheme['substitution'])
+                                    # print('your mark for substitution ', self.scheme['substitution'])
+                                    concept.append('your mark for substitution '+ str(self.scheme['substitution']))
+                                    dataArray.append({"concept": "substitution", "details": "Correct",
+                                                      "marksAwarded": self.scheme['substitution'], "step": step,
+                                                      "totalMarks": self.scheme['substitution']})
                                     gotSubsMark = True
                                     marks += 1
                             else:
@@ -348,24 +436,34 @@ class Type2(Logs, Thread):
                                         numofcrctmuliplication += 1
 
                                 if numofcrctmuliplication == ans_matrix.shape[0]:
-                                    print('your step ', Matrix(stu_ans), ' is wrong. you have multiplied only first row by constant')
+                                    # print('your step ', Matrix(stu_ans), ' is wrong. you have multiplied only first row by constant')
+                                    errStep = step
+                                    error_Identification.append('your step '+ str(Matrix(stu_ans))+ ' is wrong. you have multiplied only first row by constant')
                                     break
                                 isShowErrMsg = false
                                 for val in used:
                                     if val - stu_ans == zeros(row_size, col_size):
-                                        print('you have forgotten to muliply by the constant when finding step ', Matrix(stu_ans))
+                                        # print('you have forgotten to muliply by the constant when finding step ', Matrix(stu_ans))
+                                        errStep = step
+                                        error_Identification.append('you have forgotten to muliply by the constant when finding step ' + str(Matrix(stu_ans)))
                                         isShowErrMsg =true
                                         break
                                 if isShowErrMsg:
                                     break
                                 if multiplied:
-                                    print('you have made mistake in substitution ', stu_ans)
+                                    # print('you have made mistake in substitution ', stu_ans)
+                                    errStep = step
+                                    error_Identification.append('you have made mistake in substitution ' + str(stu_ans))
                                     break
                                 if len(list) / row_size > 1 and not multiplied:
-                                    print('you have made mistake in multiplication when calculating ', matrix_question)
+                                    # print('you have made mistake in multiplication when calculating ', matrix_question)
+                                    errStep = step
+                                    error_Identification.append('you have made mistake in multiplication when calculating '+ str(matrix_question))
                                     break
                                 if middlesubs:
-                                    print('you have made mistake in substitution ', stu_ans)
+                                    # print('you have made mistake in substitution ', stu_ans)
+                                    errStep = step
+                                    error_Identification.append('you have made mistake in substitution ' + str(stu_ans))
                                     break
                     else:
                         subs_matrix = ans_matrix - Matrix(stu_ans_matr1)
@@ -373,19 +471,35 @@ class Type2(Logs, Thread):
                             # self.logger.info('your step is correct')
                             if len(list) / row_size == 1 and not gotFinalStepMark and not middlesubs:
                                 if iscontainminus:
-                                    print('your mark for subtraction ', self.scheme['subtraction'])
+                                    # print('your mark for subtraction ', self.scheme['subtraction'])
+                                    concept.append('your mark for subtraction '+ str(self.scheme['subtraction']))
+                                    dataArray.append({"concept": "subtraction", "details": "Correct",
+                                                      "marksAwarded": self.scheme['subtraction'], "step": step,
+                                                      "totalMarks": self.scheme['subtraction']})
                                     marks += 1
                                     gotFinalStepMark = true
                                 else:
-                                    print('your mark for addition ', self.scheme['addition'])
+                                    # print('your mark for addition ', self.scheme['addition'])
+                                    concept.append('your mark for addition '+ str(self.scheme['addition']))
+                                    dataArray.append({"concept": "addition", "details": "Correct",
+                                                      "marksAwarded": self.scheme['addition'], "step": step,
+                                                      "totalMarks": self.scheme['addition']})
                                     gotFinalStepMark = True
                                     marks += 1
                             if not gotMultipliedMark:
-                                print('your mark for multiplication ', self.scheme['multiplication'])
+                                # print('your mark for multiplication ', self.scheme['multiplication'])
+                                concept.append('your mark for multiplication '+ str(self.scheme['multiplication']))
+                                dataArray.append({"concept": "multiplication", "details": "Correct",
+                                                  "marksAwarded": self.scheme['multiplication'], "step": step,
+                                                  "totalMarks": self.scheme['multiplication']})
                                 gotMultipliedMark = True
                                 marks += 1
                             if not gotSubsMark:
-                                print('your mark for substitution ', self.scheme['substitution'])
+                                # print('your mark for substitution ', self.scheme['substitution'])
+                                concept.append('your mark for substitution '+ str(self.scheme['substitution']))
+                                dataArray.append({"concept": "substitution", "details": "Correct",
+                                                  "marksAwarded": self.scheme['substitution'], "step": step,
+                                                  "totalMarks": self.scheme['substitution']})
                                 gotSubsMark = True
                                 marks += 1
                         else:
@@ -408,11 +522,15 @@ class Type2(Logs, Thread):
                                     numofcrctmuliplication += 1
 
                             if numofcrctmuliplication == ans_matrix.shape[0]:
-                                print('your step ', Matrix(stu_ans_matr1), ' is wrong. you have multiplied only first row by constant')
+                                errStep = step
+                                error_Identification.append('your step '+ str(Matrix(stu_ans_matr1)) + ' is wrong. you have multiplied only first row by constant')
+                                # print('your step ', Matrix(stu_ans_matr1), ' is wrong. you have multiplied only first row by constant')
                                 break
                             for val in used:
                                 if val - Matrix(stu_ans_matr1) == zeros(row_size, col_size):
-                                    print('you have forgotten to muliply by the constant when finding step ', Matrix(stu_ans_matr1))
+                                    errStep = step
+                                    error_Identification.append('you have forgotten to muliply by the constant when finding step ' + str(Matrix(stu_ans_matr1)))
+                                    # print('you have forgotten to muliply by the constant when finding step ', Matrix(stu_ans_matr1))
                                     isShowErrMsg = true
                                     break
                             if isShowErrMsg:
@@ -426,17 +544,23 @@ class Type2(Logs, Thread):
                                         element_val1 = l1.pop()
                                         element_val2 = l3.pop()
                                         if element_val1 == l2.pop() and element_val1 != element_val2:
-                                            print('you have done addition instead of subtraction when finding ', Matrix(stu_ans_matr1))
+                                            errStep = step
+                                            error_Identification.append('you have done addition instead of subtraction when finding '+ str(Matrix(stu_ans_matr1)))
+                                            # print('you have done addition instead of subtraction when finding ', Matrix(stu_ans_matr1))
                                             isShowErrMsg = true
                                             break
                             if isShowErrMsg:
                                 break
                             if len(list) / row_size == 1 and not middlesubs:
                                 if iscontainminus:
-                                    print('Your step ', Matrix(stu_ans_matr1),' is wrong.', ' you have made mistake in subtraction when finding ', matrix_question)
+                                    errStep = step
+                                    error_Identification.append('Your step ' + str(Matrix(stu_ans_matr1)) + ' is wrong.  you have made mistake in subtraction when finding '+ str(matrix_question))
+                                    # print('Your step ', Matrix(stu_ans_matr1),' is wrong.', ' you have made mistake in subtraction when finding ', matrix_question)
                                     break
                                 else:
-                                    print('you have made mistake in addition when finding ', Matrix(stu_ans_matr1))
+                                    errStep = step
+                                    error_Identification.append('you have made mistake in addition when finding '+ str(Matrix(stu_ans_matr1)))
+                                    # print('you have made mistake in addition when finding ', Matrix(stu_ans_matr1))
                                     break
 
                 if oneStepFinished:
@@ -450,6 +574,15 @@ class Type2(Logs, Thread):
                     middlesubs = False
                     operator = None
                 i += 1
-            print('your final marks is ', marks, 'out of ',self.scheme['totalmarks'])
+            if not dataArray:
+                data = {"studentTotal": marks, "errStep":errStep, "maxMarks":self.scheme['totalmarks'], "error_identification":error_Identification}
+            elif not error_Identification:
+                data = {"studentTotal": marks, "maxMarks":self.scheme['totalmarks'], "concepts":dataArray}
+            else:
+                data = {"studentTotal": marks, "errStep":errStep, "maxMarks":self.scheme['totalmarks'], "concepts":dataArray, "error_identification":error_Identification}
+
+            print(json.dumps(data))
+
+            # print('your final marks is ', marks, 'out of ',self.scheme['totalmarks'])
         time.sleep(0.1)
         self.logger.info('Finish answer reading')
